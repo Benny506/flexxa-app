@@ -78,7 +78,7 @@ export default function EmailVerification() {
         if (otpCode.length !== 6) return;
 
         try {
-            router.push('/auth/setup-profile');
+            router.push('/onboarding/gender-selection');
         } catch (error) {
             Alert.alert('Error', 'Invalid verification code. Please try again.');
         }

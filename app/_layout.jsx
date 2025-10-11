@@ -13,6 +13,9 @@ export default function RootLayout() {
           <Stack.Screen name="welcome" />
           <Stack.Screen name="age-verification/index" />
           <Stack.Screen name="auth" />
+          <Stack.Screen name="verification" />
+          <Stack.Screen name="onboarding" />
+          <Stack.Screen name="(main)" />
         </Stack>
       </GestureHandlerRootView>
     </SafeAreaProvider>
