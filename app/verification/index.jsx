@@ -10,6 +10,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import FaceMesh from '../../assets/images/face-mesh.svg'
+import IdIcon from '../../assets/images/icons/id.svg'
+import SelfieIcon from '../../assets/images/icons/selfie.svg'
 
 export default function VerificationIndexScreen() {
     const router = useRouter();
@@ -25,10 +28,7 @@ export default function VerificationIndexScreen() {
             <View style={styles.content}>
                 {/* Face ID Illustration - Replace with your SVG/Image */}
                 <View style={styles.illustrationContainer}>
-                    {/* Add your face mesh illustration here */}
-                    <View style={styles.illustrationPlaceholder}>
-                        <Ionicons name="scan" size={80} color="#484ED4" />
-                    </View>
+                    <FaceMesh />
                 </View>
 
                 {/* Title */}
@@ -41,9 +41,7 @@ export default function VerificationIndexScreen() {
                 <View style={styles.optionsContainer}>
                     {/* Upload Government ID */}
                     <View style={styles.optionCard}>
-                        <View style={styles.optionIcon}>
-                            <Ionicons name="card-outline" size={24} color="#484ED4" />
-                        </View>
+                        <IdIcon style={styles.optionIcon} />
                         <View style={styles.optionContent}>
                             <Text style={styles.optionTitle}>Upload a Government-Issued ID</Text>
                             <Text style={styles.optionSubtitle}>
@@ -60,9 +58,7 @@ export default function VerificationIndexScreen() {
 
                     {/* Take a Selfie */}
                     <View style={styles.optionCard}>
-                        <View style={styles.optionIcon}>
-                            <Ionicons name="camera-outline" size={24} color="#484ED4" />
-                        </View>
+                        <SelfieIcon style={styles.optionIcon} />
                         <View style={styles.optionContent}>
                             <Text style={styles.optionTitle}>Take a Selfie</Text>
                             <Text style={styles.optionSubtitle}>
@@ -99,7 +95,7 @@ const styles = StyleSheet.create({
     illustrationContainer: {
         alignItems: 'center',
         marginTop: 40,
-        marginBottom: 32,
+        marginBottom: 28,
     },
     illustrationPlaceholder: {
         width: 200,
@@ -143,7 +139,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 12,
+        marginRight: 14,
     },
     optionContent: {
         flex: 1,

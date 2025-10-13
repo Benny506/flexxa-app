@@ -9,7 +9,7 @@ import {
     Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Camera, CameraType } from 'expo-camera';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -19,7 +19,7 @@ const OVAL_HEIGHT = OVAL_WIDTH * 1.3;
 
 export default function CameraCaptureScreen() {
     const router = useRouter();
-    const [hasPermission, setHasPermission] = useState(null);
+    const [permission, requestPermission] = useCameraPermissions();
     const [isCameraReady, setIsCameraReady] = useState(false);
     const [alignmentMessage, setAlignmentMessage] = useState('');
     const [isAligned, setIsAligned] = useState(false);
@@ -29,8 +29,9 @@ export default function CameraCaptureScreen() {
 
     useEffect(() => {
         (async () => {
-            const { status } = await Camera.requestCameraPermissionsAsync();
-            setHasPermission(status === 'granted');
+            if (!permission) {
+                await requestPermission();
+            }
         })();
     }, []);
 
@@ -100,7 +101,7 @@ export default function CameraCaptureScreen() {
         router.back();
     };
 
-    if (hasPermission === null) {
+    if (!permission) {
         return (
             <View style={styles.container}>
                 <Text style={styles.messageText}>Requesting camera permission...</Text>
@@ -108,10 +109,21 @@ export default function CameraCaptureScreen() {
         );
     }
 
-    if (hasPermission === false) {
+    if (!permission.granted) {
         return (
             <View style={styles.container}>
-                <Text style={styles.messageText}>No access to camera</Text>
+                <SafeAreaView style={styles.messageContainer}>
+                    <Text style={styles.messageText}>No access to camera</Text>
+                    <Text style={[styles.messageText, { fontSize: 14, marginTop: 10 }]}>
+                        Camera features require a physical device
+                    </Text>
+                    <TouchableOpacity 
+                        style={styles.backButton}
+                        onPress={handleClose}
+                    >
+                        <Text style={styles.backButtonText}>Go Back</Text>
+                    </TouchableOpacity>
+                </SafeAreaView>
             </View>
         );
     }
@@ -121,57 +133,57 @@ export default function CameraCaptureScreen() {
             <StatusBar barStyle="light-content" />
             
             <Animated.View style={[styles.cameraContainer, { opacity: fadeAnim }]}>
-                <Camera
+                <CameraView
                     ref={cameraRef}
                     style={styles.camera}
-                    type={CameraType.front}
+                    facing="front"
                     onCameraReady={() => setIsCameraReady(true)}
-                >
-                    {/* Close Button */}
-                    <SafeAreaView style={styles.topBar} edges={['top']}>
-                        <TouchableOpacity 
-                            style={styles.closeButton}
-                            onPress={handleClose}
-                        >
-                            <Ionicons name="close" size={28} color="#fff" />
-                        </TouchableOpacity>
-                    </SafeAreaView>
+                />
+                
+                {/* Close Button */}
+                <SafeAreaView style={styles.topBar} edges={['top']}>
+                    <TouchableOpacity 
+                        style={styles.closeButton}
+                        onPress={handleClose}
+                    >
+                        <Ionicons name="close" size={28} color="#fff" />
+                    </TouchableOpacity>
+                </SafeAreaView>
 
-                    {/* Oval Guide Overlay */}
-                    <View style={styles.overlay}>
-                        <View style={styles.overlayTop} />
-                        <View style={styles.overlayMiddle}>
-                            <View style={styles.overlaySide} />
-                            <Animated.View 
-                                style={[
-                                    styles.ovalContainer,
-                                    { transform: [{ scale: pulseAnim }] }
-                                ]}
-                            >
-                                <View style={[
-                                    styles.oval,
-                                    isAligned && styles.ovalAligned
-                                ]} />
-                            </Animated.View>
-                            <View style={styles.overlaySide} />
-                        </View>
-                        <View style={styles.overlayBottom}>
-                            {/* Alignment Message */}
-                            {alignmentMessage && (
-                                <View style={styles.alignmentMessageContainer}>
-                                    <Ionicons 
-                                        name={isAligned ? "checkmark-circle" : "scan"} 
-                                        size={20} 
-                                        color="#fff" 
-                                    />
-                                    <Text style={styles.alignmentMessage}>
-                                        {alignmentMessage}
-                                    </Text>
-                                </View>
-                            )}
-                        </View>
+                {/* Oval Guide Overlay */}
+                <View style={styles.overlay}>
+                    <View style={styles.overlayTop} />
+                    <View style={styles.overlayMiddle}>
+                        <View style={styles.overlaySide} />
+                        <Animated.View 
+                            style={[
+                                styles.ovalContainer,
+                                { transform: [{ scale: pulseAnim }] }
+                            ]}
+                        >
+                            <View style={[
+                                styles.oval,
+                                isAligned && styles.ovalAligned
+                            ]} />
+                        </Animated.View>
+                        <View style={styles.overlaySide} />
                     </View>
-                </Camera>
+                    <View style={styles.overlayBottom}>
+                        {/* Alignment Message */}
+                        {alignmentMessage && (
+                            <View style={styles.alignmentMessageContainer}>
+                                <Ionicons 
+                                    name={isAligned ? "checkmark-circle" : "scan"} 
+                                    size={20} 
+                                    color="#fff" 
+                                />
+                                <Text style={styles.alignmentMessage}>
+                                    {alignmentMessage}
+                                </Text>
+                            </View>
+                        )}
+                    </View>
+                </View>
             </Animated.View>
 
             {/* Bottom Controls */}
@@ -199,11 +211,28 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#000',
     },
+    messageContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 40,
+    },
     messageText: {
         color: '#fff',
         fontSize: 16,
         textAlign: 'center',
-        marginTop: 100,
+    },
+    backButton: {
+        backgroundColor: '#484ED4',
+        paddingVertical: 12,
+        paddingHorizontal: 24,
+        borderRadius: 8,
+        marginTop: 20,
+    },
+    backButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
     },
     cameraContainer: {
         flex: 1,

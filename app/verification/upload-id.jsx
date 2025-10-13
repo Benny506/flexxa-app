@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as DocumentPicker from 'expo-document-picker';
+import SkipButton from '../../components/skip-button';
 
 export default function UploadIDScreen() {
     const router = useRouter();
@@ -72,9 +73,10 @@ export default function UploadIDScreen() {
             <StatusBar barStyle="dark-content" />
             
             <View style={styles.header}>
-                <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
+                {/* <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
                     <Text style={styles.skipText}>Skip</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
+                <SkipButton onPress={handleSkip} />
             </View>
 
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -231,21 +233,13 @@ const styles = StyleSheet.create({
         paddingHorizontal: 24,
         paddingVertical: 16,
     },
-    skipButton: {
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-    },
-    skipText: {
-        fontSize: 16,
-        color: '#484ED4',
-        fontWeight: '600',
-    },
     scrollView: {
         flex: 1,
     },
     content: {
         paddingHorizontal: 24,
         paddingBottom: 24,
+        paddingTop: 70,
     },
     title: {
         fontSize: 24,
@@ -422,8 +416,10 @@ const styles = StyleSheet.create({
     },
     modalButtons: {
         gap: 12,
+        flexDirection: 'row',
     },
     modalButtonSecondary: {
+        flex: 1,
         borderWidth: 1.5,
         borderColor: '#484ED4',
         borderRadius: 12,
@@ -436,6 +432,7 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     modalButtonPrimary: {
+        flex: 1,
         backgroundColor: '#484ED4',
         borderRadius: 12,
         paddingVertical: 14,

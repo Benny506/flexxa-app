@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import NumericKeyboard from '../../components/keyboard';
+import BackButton from '../../components/back-button';
 
 export default function AgeVerification() {
     const router = useRouter();
@@ -25,7 +26,7 @@ export default function AgeVerification() {
 
     const handleKeyboardPress = (value) => {
         setErrorMessage('');
-        
+
         if (activeInput === 'day') {
             const newDay = (day + value).slice(0, 2);
             setDay(newDay);
@@ -46,8 +47,8 @@ export default function AgeVerification() {
     };
 
     const handleDelete = () => {
-        setErrorMessage(''); 
-        
+        setErrorMessage('');
+
         if (activeInput === 'day') {
             if (day.length > 0) {
                 setDay(day.slice(0, -1));
@@ -72,14 +73,14 @@ export default function AgeVerification() {
     const calculateAge = (birthDay, birthMonth, birthYear) => {
         const today = new Date();
         const birthDate = new Date(birthYear, birthMonth - 1, birthDay);
-        
+
         let calculatedAge = today.getFullYear() - birthDate.getFullYear();
         const monthDiff = today.getMonth() - birthDate.getMonth();
-        
+
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
             calculatedAge--;
         }
-        
+
         return calculatedAge;
     };
 
@@ -127,9 +128,7 @@ export default function AgeVerification() {
     return (
         <View style={styles.container}>
             {/* Back Button */}
-            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                <Feather name="chevron-left" size={28} color="black" />
-            </TouchableOpacity>
+            <BackButton onPress={handleBack} />
 
             {/* Content */}
             <View style={styles.content}>
@@ -203,11 +202,13 @@ export default function AgeVerification() {
             </View>
 
             {/* Numeric Keyboard */}
-            <NumericKeyboard 
-                onPress={handleKeyboardPress} 
-                onDelete={handleDelete} 
-                onConfirm={handleContinue} 
-            />
+            <View style={{ marginBottom: 30 }}>
+                <NumericKeyboard
+                    onPress={handleKeyboardPress}
+                    onDelete={handleDelete}
+                    onConfirm={handleContinue}
+                />
+            </View>
 
             {/* Confirmation Modal */}
             <Modal
@@ -216,7 +217,7 @@ export default function AgeVerification() {
                 animationType="fade"
                 onRequestClose={() => setShowModal(false)}
             >
-                <Pressable 
+                <Pressable
                     style={styles.modalOverlay}
                     onPress={() => setShowModal(false)}
                 >
@@ -259,23 +260,6 @@ const styles = StyleSheet.create({
         paddingTop: 60,
         justifyContent: 'space-between',
     },
-    backButton: {
-        position: 'absolute',
-        top: 50,
-        left: 24,
-        width: 44,
-        height: 44,
-        backgroundColor: '#FFFFFF',
-        borderRadius: 8,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
-        elevation: 3,
-        zIndex: 10,
-    },
     content: {
         flex: 1,
         justifyContent: 'center',
@@ -291,7 +275,7 @@ const styles = StyleSheet.create({
     },
     subtitle: {
         fontSize: 16,
-        color: '#8E8E93',
+        color: '#7E7E7E',
         fontWeight: '400',
     },
     inputContainer: {
@@ -299,7 +283,7 @@ const styles = StyleSheet.create({
     },
     inputLabel: {
         fontSize: 14,
-        color: '#000000',
+        color: 'rgba(126, 126, 126, 0.5)', // 50% opacity
         marginBottom: 12,
         fontWeight: '500',
     },
@@ -325,9 +309,9 @@ const styles = StyleSheet.create({
         borderWidth: 1,
     },
     errorText: {
-        color: '#FF3B30',
+        color: '#E33629',
         fontSize: 14,
-        marginBottom: 12,
+        marginBottom: 30,
         textAlign: 'left',
     },
     continueButton: {
@@ -337,6 +321,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
+        marginTop: 10,
     },
     continueButtonActive: {
         backgroundColor: '#484ED4',
@@ -368,9 +353,10 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         backgroundColor: '#FFFFFF',
-        borderRadius: 20,
+        borderRadius: 15,
         padding: 32,
-        width: 340,
+        paddingVertical: 45,
+        marginHorizontal: 10,
         alignItems: 'center',
     },
     modalTitle: {
@@ -395,7 +381,7 @@ const styles = StyleSheet.create({
         flex: 1,
         height: 50,
         backgroundColor: '#FFFFFF',
-        borderWidth: 1.5,
+        borderWidth: 1,
         borderColor: '#484ED4',
         borderRadius: 12,
         justifyContent: 'center',

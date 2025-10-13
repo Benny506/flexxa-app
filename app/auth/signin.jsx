@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
+import { FontAwesome, Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import {
-    View,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    StyleSheet,
-    StatusBar,
+    Alert,
+    Image,
     KeyboardAvoidingView,
     Platform,
     ScrollView,
-    Alert,
-    Image
+    StatusBar,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 
 import Logo from '../../assets/images/flexxa-logo-2.png';
 
@@ -198,7 +198,7 @@ export default function SignInScreen() {
                     {loginError && (
                         <View style={styles.loginErrorContainer}>
                             <View style={styles.errorIcon}>
-                                <Ionicons name="alert-circle" size={16} color="#fff" />
+                                <Ionicons name="alert-circle" size={16} color="#E33629" />
                             </View>
                             <Text style={styles.loginErrorText}>{loginError}</Text>
                         </View>
@@ -222,11 +222,15 @@ export default function SignInScreen() {
                     </TouchableOpacity>
 
                     {/* Divider */}
-                    <Text style={styles.divider}>Sign in with google</Text>
+                    <View style={{flexDirection: 'row', alignItems: 'center', marginVertical: 20}}>
+                        <View style={{flex: 1, height: 1, backgroundColor: '#7E7E7E33'}}></View>
+                        <Text style={{marginHorizontal: 10, color: "#7E7E7E80"}}>Sign in with google</Text>
+                        <View style={{flex: 1, height: 1, backgroundColor: '#7E7E7E33'}}></View>
+                    </View>
 
                     {/* Google Sign In Button */}
                     <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
-                        <Ionicons name="logo-google" size={20} color="#666" />
+                        <FontAwesome name="google" size={20} />
                         <Text style={styles.googleButtonText}>Google</Text>
                     </TouchableOpacity>
 
@@ -252,10 +256,10 @@ export const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        flexGrow: 1,
+        flexGrow: 0.5,
         paddingHorizontal: 24,
         paddingTop: 20,
-        paddingBottom: 40,
+        // paddingBottom: 40,
     },
     logoContainer: {
         flex: 1,
@@ -267,24 +271,26 @@ export const styles = StyleSheet.create({
         fontWeight: '700',
         color: '#1a1a1a',
         marginBottom: 8,
+        textAlign: 'center',
     },
     subtitle: {
         fontSize: 14,
         color: '#666',
         marginBottom: 24,
         lineHeight: 20,
+        textAlign: 'center',
     },
     tabContainer: {
         flexDirection: 'row',
-        backgroundColor: '#F5F6FA',
-        borderRadius: 12,
-        padding: 4,
+        backgroundColor: 'rgba(72, 78, 212, 0.08)',
+        borderRadius: 30,
+        padding: 6,
         marginBottom: 24,
     },
     tab: {
         flex: 1,
-        paddingVertical: 12,
-        borderRadius: 8,
+        paddingVertical: 16,
+        borderRadius: 30,
         alignItems: 'center',
     },
     activeTab: {
@@ -298,10 +304,10 @@ export const styles = StyleSheet.create({
     tabText: {
         fontSize: 15,
         fontWeight: '500',
-        color: '#666',
+        color: '#484ED4',
     },
     activeTabText: {
-        color: '#5B7FFF',
+        color: '#484ED4',
         fontWeight: '600',
     },
     inputContainer: {
@@ -343,52 +349,53 @@ export const styles = StyleSheet.create({
         marginTop: 6,
     },
     loginErrorContainer: {
-        backgroundColor: '#FF6B6B',
+        backgroundColor: 'rgba(227, 54, 41, 0.05)',
         borderRadius: 8,
         padding: 16,
         marginBottom: 16,
-        flexDirection: 'row',
-        alignItems: 'flex-start',
+        flexDirection: 'column',
+        alignItems: 'center',
     },
     errorIcon: {
         marginRight: 8,
         marginTop: 2,
     },
     loginErrorText: {
-        color: '#fff',
+        color: '#E33629',
         fontSize: 13,
         lineHeight: 18,
         flex: 1,
+        textAlign: "center",
     },
     forgotPassword: {
         alignSelf: 'flex-end',
         marginBottom: 20,
     },
     forgotPasswordText: {
-        color: '#999',
+        color: '#7E7E7E',
         fontSize: 14,
     },
     signInButton: {
-        backgroundColor: '#5B7FFF',
+        backgroundColor: '#484ED4',
         borderRadius: 8,
         paddingVertical: 16,
         alignItems: 'center',
-        marginBottom: 24,
+        marginBottom: 10,
     },
     signInButtonDisabled: {
-        backgroundColor: '#D9DFFE',
+        backgroundColor: 'rgba(72, 78, 212, 0.2)',
     },
     signInButtonText: {
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
     },
-    divider: {
-        textAlign: 'center',
-        color: '#999',
-        fontSize: 13,
-        marginBottom: 16,
-    },
+    // divider: {
+    //     textAlign: 'center',
+    //     color: '#999',
+    //     fontSize: 13,
+    //     marginBottom: 16,
+    // },
     googleButton: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -401,7 +408,7 @@ export const styles = StyleSheet.create({
     },
     googleButtonText: {
         fontSize: 15,
-        color: '#1a1a1a',
+        color: '#1E1E1E',
         marginLeft: 10,
         fontWeight: '500',
     },
@@ -415,7 +422,7 @@ export const styles = StyleSheet.create({
         fontSize: 14,
     },
     signUpLink: {
-        color: '#5B7FFF',
+        color: '#484ED4',
         fontSize: 14,
         fontWeight: '600',
     },

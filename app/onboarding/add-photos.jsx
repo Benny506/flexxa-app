@@ -14,6 +14,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import ProgressIndicator from '../../components/progress-indicator';
+import Loader from '../../assets/images/loader.svg'
 
 export default function AddPhotos() {
     const router = useRouter();
@@ -47,19 +48,19 @@ export default function AddPhotos() {
 
     const handleNext = async () => {
         const hasAtLeastOnePhoto = photos.some(photo => photo !== null);
-        
+
         if (!hasAtLeastOnePhoto) {
             return;
         }
 
         setLoading(true);
-        
+
         try {
             // Simulate upload
             await new Promise(resolve => setTimeout(resolve, 2000));
-            
+
             // Navigate to main app or dashboard
-            router.push('/dashboard');
+            router.push('/verification');
         } catch (error) {
             Alert.alert('Error', 'Failed to upload photos');
         } finally {
@@ -72,7 +73,7 @@ export default function AddPhotos() {
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
             <StatusBar barStyle="dark-content" />
-            
+
             <View style={styles.content}>
                 {/* Title */}
                 <View style={styles.header}>
@@ -100,8 +101,8 @@ export default function AddPhotos() {
                             >
                                 {photos[index] ? (
                                     <View style={styles.photoContainer}>
-                                        <Image 
-                                            source={{ uri: photos[index] }} 
+                                        <Image
+                                            source={{ uri: photos[index] }}
                                             style={styles.photo}
                                         />
                                         {index === 0 && (
@@ -137,8 +138,8 @@ export default function AddPhotos() {
                             >
                                 {photos[index] ? (
                                     <View style={styles.photoContainer}>
-                                        <Image 
-                                            source={{ uri: photos[index] }} 
+                                        <Image
+                                            source={{ uri: photos[index] }}
                                             style={styles.photo}
                                         />
                                         <TouchableOpacity
@@ -159,13 +160,14 @@ export default function AddPhotos() {
                     </View>
                 </View>
 
+
+                <View style={styles.spacer} />
+
                 {/* Info Message */}
                 <View style={styles.infoContainer}>
                     <Ionicons name="information-circle-outline" size={20} color="#666" />
                     <Text style={styles.infoText}>Add at least one photo to proceed</Text>
                 </View>
-
-                <View style={styles.spacer} />
 
                 {/* Progress Bar */}
                 <ProgressIndicator currentStep={5} totalSteps={5} />
@@ -190,14 +192,8 @@ export default function AddPhotos() {
             {/* Loading Overlay */}
             {loading && (
                 <View style={styles.loadingOverlay}>
-                    <View style={styles.loadingCard}>
-                        <View style={styles.logoContainer}>
-                            <View style={styles.logo}>
-                                <Text style={styles.logoText}>F</Text>
-                            </View>
-                        </View>
-                        <Text style={styles.loadingText}>Loading...</Text>
-                    </View>
+                    <Loader />
+                    <Text style={styles.loadingText}>Loading...</Text>
                 </View>
             )}
         </SafeAreaView>
@@ -240,7 +236,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         gap: 12,
         marginBottom: 12,
-        justifyContent: 'center',
+        justifyContent: 'start',
     },
     photoBox: {
         width: 100,
@@ -304,8 +300,9 @@ const styles = StyleSheet.create({
     },
     infoContainer: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'start',
         gap: 8,
+        marginVertical: 12,
     },
     infoText: {
         fontSize: 14,
@@ -339,32 +336,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    loadingCard: {
-        backgroundColor: '#fff',
-        borderRadius: 20,
-        padding: 40,
-        alignItems: 'center',
-        minWidth: 200,
-    },
-    logoContainer: {
-        marginBottom: 20,
-    },
-    logo: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        backgroundColor: '#484ED4',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    logoText: {
-        fontSize: 40,
-        fontWeight: '700',
-        color: '#fff',
-    },
     loadingText: {
-        fontSize: 18,
+        fontSize: 14,
         fontWeight: '600',
-        color: '#1a1a1a',
+        color: '#fff',
+        margin: 4,
+        textAlign: 'center'
     },
 });

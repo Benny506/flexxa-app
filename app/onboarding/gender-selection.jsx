@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     optionButtonSelected: {
-        borderColor: '#484ED4',
+        borderColor: '#882FAE',
         backgroundColor: '#F5F6FF',
     },
     icon: {
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
         marginBottom: 24,
     },
     nextButtonDisabled: {
-        backgroundColor: '#D9DFFE',
+        backgroundColor: 'rgba(72, 78, 212, 0.2)',
     },
     nextButtonText: {
         color: '#fff',

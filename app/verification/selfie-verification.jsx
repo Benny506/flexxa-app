@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import SkipButton from '../../components/skip-button';
 
 export default function SelfieVerificationScreen() {
     const router = useRouter();
@@ -26,11 +27,12 @@ export default function SelfieVerificationScreen() {
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
             <StatusBar barStyle="dark-content" />
-            
+
             <View style={styles.header}>
-                <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
+                {/* <TouchableOpacity onPress={handleSkip} style={styles.skipButton}>
                     <Text style={styles.skipText}>Skip</Text>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
+                <SkipButton onPress={handleSkip} />
             </View>
 
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -46,10 +48,11 @@ export default function SelfieVerificationScreen() {
                         <View style={styles.exampleCard}>
                             {/* Add accepted image placeholder */}
                             <View style={styles.exampleImagePlaceholder}>
-                                <Ionicons name="person" size={60} color="#4CAF50" />
+                                {/* <Ionicons name="person" size={60} color="#4CAF50" /> */}
+                                <Image source={require('../../assets/images/selfie-ex1.png')} />
                             </View>
-                            <View style={styles.badge} style={[styles.badge, styles.badgeAccepted]}>
-                                <Ionicons name="checkmark" size={14} color="#fff" />
+                            <View style={[styles.badge, styles.badgeAccepted]}>
+                                <Ionicons name="checkmark" size={18} color="#fff" />
                                 <Text style={styles.badgeText}>Accepted</Text>
                             </View>
                         </View>
@@ -57,10 +60,11 @@ export default function SelfieVerificationScreen() {
                         <View style={styles.exampleCard}>
                             {/* Add rejected image placeholder */}
                             <View style={styles.exampleImagePlaceholder}>
-                                <Ionicons name="person" size={60} color="#FF5252" />
+                                {/* <Ionicons name="person" size={60} color="#FF5252" /> */}
+                                <Image source={require('../../assets/images/selfie-ex2.png')} />
                             </View>
                             <View style={[styles.badge, styles.badgeRejected]}>
-                                <Ionicons name="close" size={14} color="#fff" />
+                                <Ionicons name="close" size={18} color="#fff" />
                                 <Text style={styles.badgeText}>Rejected</Text>
                             </View>
                         </View>
@@ -132,6 +136,7 @@ const styles = StyleSheet.create({
     content: {
         paddingHorizontal: 24,
         paddingBottom: 24,
+        paddingTop: 70,
     },
     title: {
         fontSize: 24,
@@ -156,7 +161,7 @@ const styles = StyleSheet.create({
     },
     exampleImagePlaceholder: {
         width: '100%',
-        aspectRatio: 3/4,
+        aspectRatio: 3 / 4,
         backgroundColor: '#F5F5F5',
         borderRadius: 12,
         justifyContent: 'center',
@@ -166,21 +171,22 @@ const styles = StyleSheet.create({
     badge: {
         position: 'absolute',
         bottom: 12,
-        left: 12,
-        right: 12,
+        alignSelf: 'center',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 8,
         paddingHorizontal: 12,
-        borderRadius: 8,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: '#fff',
         gap: 6,
     },
     badgeAccepted: {
-        backgroundColor: '#4CAF50',
+        backgroundColor: 'rgba(49, 159, 67, 0.75)',
     },
     badgeRejected: {
-        backgroundColor: '#FF5252',
+        backgroundColor: 'rgba(227, 54, 41, 0.75)',
     },
     badgeText: {
         color: '#fff',
@@ -188,9 +194,9 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     instructionsSection: {
-        backgroundColor: '#F8F9FF',
-        borderRadius: 12,
-        padding: 20,
+        // backgroundColor: '#F8F9FF',
+        // borderRadius: 12,
+        // padding: 20,
     },
     instructionsTitle: {
         fontSize: 16,

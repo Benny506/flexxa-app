@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import BackButton from '../../components/back-button';
 
 export default function SetNewPasswordScreen() {
     const router = useRouter();
@@ -25,16 +26,11 @@ export default function SetNewPasswordScreen() {
     const [confirmError, setConfirmError] = useState('');
     const [showSuccessModal, setShowSuccessModal] = useState(false);
 
-    // Handle back navigation
-    const handleBack = () => {
-        router.back();
-    };
-
     // Validate password
     const validatePassword = (text) => {
         setPassword(text);
         setPasswordError('');
-        
+
         if (text && text.length < 8) {
             setPasswordError('Create a password with at least 8 characters');
         }
@@ -44,7 +40,7 @@ export default function SetNewPasswordScreen() {
     const validateConfirmPassword = (text) => {
         setConfirmPassword(text);
         setConfirmError('');
-        
+
         if (text && text !== password) {
             setConfirmError('Passwords do not match');
         }
@@ -82,6 +78,7 @@ export default function SetNewPasswordScreen() {
             setShowSuccessModal(true);
         } catch (error) {
             // Handle error
+            console.error('Password reset error:', error);
         }
     };
 
@@ -101,16 +98,16 @@ export default function SetNewPasswordScreen() {
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 style={styles.flex}
             >
+                {/* Back Button */}
+                <View style={{ marginBottom: 100 }}>
+                    <BackButton onPress={() => router.back()} />
+                </View>
+
                 <ScrollView
                     contentContainerStyle={styles.scrollContent}
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                 >
-                    {/* Header */}
-                    <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                        <Ionicons name="chevron-back" size={24} color="#000" />
-                    </TouchableOpacity>
-
                     {/* Title */}
                     <Text style={styles.title}>Set New Password</Text>
                     <Text style={styles.subtitle}>Must be at least 8 characters</Text>
@@ -143,9 +140,9 @@ export default function SetNewPasswordScreen() {
                                 />
                             </TouchableOpacity>
                         </View>
-                        {passwordError && (
+                        {passwordError ? (
                             <Text style={styles.errorText}>{passwordError}</Text>
-                        )}
+                        ) : null}
                     </View>
 
                     {/* Confirm Password Input */}
@@ -176,9 +173,9 @@ export default function SetNewPasswordScreen() {
                                 />
                             </TouchableOpacity>
                         </View>
-                        {confirmError && (
+                        {confirmError ? (
                             <Text style={styles.errorText}>{confirmError}</Text>
-                        )}
+                        ) : null}
                     </View>
 
                     <View style={styles.spacer} />
@@ -189,7 +186,7 @@ export default function SetNewPasswordScreen() {
                         onPress={handleResetPassword}
                         disabled={!isFormValid}
                     >
-                        <Text style={styles.resetButtonText}>Send Code</Text>
+                        <Text style={styles.resetButtonText}>Reset Password</Text>
                     </TouchableOpacity>
                 </ScrollView>
             </KeyboardAvoidingView>
@@ -206,7 +203,7 @@ export default function SetNewPasswordScreen() {
                         <View style={styles.checkmarkContainer}>
                             <Ionicons name="checkmark-circle" size={64} color="#4CAF50" />
                         </View>
-                        
+
                         <Text style={styles.modalTitle}>All done!</Text>
                         <Text style={styles.modalSubtitle}>
                             Your password has been reset. You can proceed to sign into your account.
@@ -237,12 +234,6 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         paddingHorizontal: 24,
         paddingTop: 8,
-    },
-    backButton: {
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
-        marginBottom: 16,
     },
     title: {
         fontSize: 28,
@@ -298,7 +289,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     resetButton: {
-        backgroundColor: '#5B7FFF',
+        backgroundColor: '#484ED4',
         borderRadius: 8,
         paddingVertical: 16,
         alignItems: 'center',
@@ -321,7 +312,7 @@ const styles = StyleSheet.create({
     },
     modalContent: {
         backgroundColor: '#fff',
-        borderRadius: 16,
+        borderRadius: 12,
         padding: 32,
         width: '100%',
         maxWidth: 400,
@@ -345,7 +336,7 @@ const styles = StyleSheet.create({
         lineHeight: 20,
     },
     signInButton: {
-        backgroundColor: '#5B7FFF',
+        backgroundColor: '#484ED4',
         borderRadius: 8,
         paddingVertical: 16,
         width: '100%',

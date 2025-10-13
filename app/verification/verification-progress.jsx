@@ -59,12 +59,12 @@ export default function VerificationProgressScreen() {
 
     const handleViewDashboard = () => {
         setShowModal(false);
-        router.push('/dashboard');
+        router.push('/home');
     };
 
     const handleGoToDashboard = () => {
         setShowModal(false);
-        router.push('/dashboard');
+        router.push('/home');
     };
 
     const handleTryAgain = () => {

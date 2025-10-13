@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     nextButtonDisabled: {
-        backgroundColor: '#D9DFFE',
+        backgroundColor: 'rgba(72, 78, 212, 0.2)',
     },
     nextButtonText: {
         color: '#fff',
