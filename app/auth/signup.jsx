@@ -277,7 +277,11 @@ export default function SignUpScreen() {
                     </TouchableOpacity>
 
                     {/* Divider */}
-                    <Text style={styles.divider}>Sign up with google</Text>
+                    <View style={{flexDirection: 'row', alignItems: 'center', marginVertical: 20}}>
+                        <View style={{flex: 1, height: 1, backgroundColor: '#7E7E7E33'}}></View>
+                        <Text style={{marginHorizontal: 10, color: "#7E7E7E80"}}>Sign in with google</Text>
+                        <View style={{flex: 1, height: 1, backgroundColor: '#7E7E7E33'}}></View>
+                    </View>
 
                     {/* Google Sign Up Button */}
                     <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignUp}>
@@ -307,10 +311,10 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scrollContent: {
-        flexGrow: 1,
+        flexGrow: 0.5,
         paddingHorizontal: 24,
         paddingTop: 20,
-        paddingBottom: 40,
+        // paddingBottom: 40,
     },
     logoContainer: {
         alignItems: 'center',
@@ -326,24 +330,26 @@ const styles = StyleSheet.create({
         fontWeight: '700',
         color: '#1a1a1a',
         marginBottom: 8,
+        textAlign: 'center',
     },
     subtitle: {
         fontSize: 14,
         color: '#666',
         marginBottom: 24,
         lineHeight: 20,
+        textAlign: 'center',
     },
     tabContainer: {
         flexDirection: 'row',
-        backgroundColor: '#F5F6FA',
-        borderRadius: 12,
-        padding: 4,
+        backgroundColor: 'rgba(72, 78, 212, 0.08)',
+        borderRadius: 30,
+        padding: 6,
         marginBottom: 24,
     },
     tab: {
         flex: 1,
-        paddingVertical: 12,
-        borderRadius: 8,
+        paddingVertical: 16,
+        borderRadius: 30,
         alignItems: 'center',
     },
     activeTab: {
@@ -357,10 +363,10 @@ const styles = StyleSheet.create({
     tabText: {
         fontSize: 15,
         fontWeight: '500',
-        color: '#666',
+        color: '#484ED4',
     },
     activeTabText: {
-        color: '#5B7FFF',
+        color: '#484ED4',
         fontWeight: '600',
     },
     inputContainer: {
@@ -402,27 +408,27 @@ const styles = StyleSheet.create({
         marginTop: 6,
     },
     signUpButton: {
-        backgroundColor: '#5B7FFF',
+        backgroundColor: '#484ED4',
         borderRadius: 8,
         paddingVertical: 16,
         alignItems: 'center',
         marginTop: 8,
-        marginBottom: 24,
+        marginBottom: 10,
     },
     signUpButtonDisabled: {
-        backgroundColor: '#D9DFFE',
+        backgroundColor: 'rgba(72, 78, 212, 0.2)',
     },
     signUpButtonText: {
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
     },
-    divider: {
-        textAlign: 'center',
-        color: '#999',
-        fontSize: 13,
-        marginBottom: 16,
-    },
+    // divider: {
+    //     textAlign: 'center',
+    //     color: '#999',
+    //     fontSize: 13,
+    //     marginBottom: 16,
+    // },
     googleButton: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -435,7 +441,7 @@ const styles = StyleSheet.create({
     },
     googleButtonText: {
         fontSize: 15,
-        color: '#1a1a1a',
+        color: '#1E1E1E',
         marginLeft: 10,
         fontWeight: '500',
     },
@@ -449,7 +455,7 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     signInLink: {
-        color: '#5B7FFF',
+        color: '#484ED4',
         fontSize: 14,
         fontWeight: '600',
     },

@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import BackButton from '../../components/back-button';
 
 export default function PrivacyPolicy() {
     const router = useRouter();
@@ -28,22 +29,20 @@ export default function PrivacyPolicy() {
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
             <StatusBar barStyle="dark-content" />
-            
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                    <Ionicons name="chevron-back" size={24} color="#000" />
-                </TouchableOpacity>
+
+            {/* Back Button */}
+            <View style={{ marginBottom: 40 }}>
+                <BackButton onPress={() => router.back()} />
             </View>
 
             {/* Content */}
-            <ScrollView 
+            <ScrollView
                 style={styles.scrollView}
                 contentContainerStyle={styles.scrollContent}
                 showsVerticalScrollIndicator={true}
             >
                 <Text style={styles.title}>Privacy Policy</Text>
-                
+
                 <Text style={styles.sectionTitle}>Forem ipsum dolor sit amet</Text>
                 <Text style={styles.paragraph}>
                     consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Curabitur tempus urna at turpis condimentum lobortis. Ut commodo efficitur ligula. Ut semper ac turpis ornare, pellentesque eros.
@@ -67,17 +66,17 @@ export default function PrivacyPolicy() {
 
             {/* Bottom Section */}
             <View style={styles.bottomSection}>
-                <TouchableOpacity 
+                <TouchableOpacity
                     style={styles.checkboxContainer}
                     onPress={() => setAgreed(!agreed)}
                     activeOpacity={0.7}
                 >
-                    <View style={[styles.checkbox, agreed && styles.checkboxChecked]}>
-                        {agreed && <Ionicons name="checkmark" size={16} color="#fff" />}
-                    </View>
                     <Text style={styles.checkboxText}>
                         Agree with terms of service and privacy policy
                     </Text>
+                    <View style={[styles.checkbox, agreed && styles.checkboxChecked]}>
+                        {agreed && <Ionicons name="checkmark" size={16} color="#fff" />}
+                    </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -97,27 +96,18 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
     },
-    header: {
-        paddingHorizontal: 24,
-        paddingTop: 8,
-        paddingBottom: 8,
-    },
-    backButton: {
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
-    },
     scrollView: {
         flex: 1,
+        paddingTop: 70,
     },
     scrollContent: {
         paddingHorizontal: 24,
-        paddingBottom: 24,
+        paddingBottom: 60,
     },
     title: {
         fontSize: 24,
         fontWeight: '700',
-        color: '#5B7FFF',
+        color: '#484ED4',
         marginBottom: 16,
     },
     sectionTitle: {
@@ -156,8 +146,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
     },
     checkboxChecked: {
-        backgroundColor: '#5B7FFF',
-        borderColor: '#5B7FFF',
+        backgroundColor: '#484ED4',
+        borderColor: '#484ED4',
     },
     checkboxText: {
         fontSize: 14,
@@ -165,13 +155,13 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     acceptButton: {
-        backgroundColor: '#5B7FFF',
+        backgroundColor: '#484ED4',
         borderRadius: 8,
         paddingVertical: 16,
         alignItems: 'center',
     },
     acceptButtonDisabled: {
-        backgroundColor: '#D9DFFE',
+        backgroundColor: 'rgba(72, 78, 212, 0.2)',
     },
     acceptButtonText: {
         color: '#fff',

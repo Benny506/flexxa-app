@@ -5,17 +5,21 @@ import {
     TouchableOpacity,
     StyleSheet,
     StatusBar,
-    Alert,
+    Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import NumericKeyboard from '../../components/keyboard';
 import BackButton from '../../components/back-button';
 
-export default function EmailVerification() {
+export default function ForgotPasswordOtpScreen() {
     const router = useRouter();
+    const params = useLocalSearchParams();
+    const { identifier, method } = params;
+
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
+    const [otpError, setOtpError] = useState('');
     const [timer, setTimer] = useState(90); // 01:30
     const [canResend, setCanResend] = useState(false);
     const [showResendSuccess, setShowResendSuccess] = useState(false);
@@ -43,10 +47,6 @@ export default function EmailVerification() {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const handleBack = () => {
-        router.back();
-    };
-
     // Handle OTP input from keyboard
     const handleOtpPress = (digit) => {
         const emptyIndex = otp.findIndex(val => val === '');
@@ -54,6 +54,7 @@ export default function EmailVerification() {
             const newOtp = [...otp];
             newOtp[emptyIndex] = digit;
             setOtp(newOtp);
+            setOtpError('');
             setShowResendSuccess(false);
         }
     };
@@ -68,20 +69,22 @@ export default function EmailVerification() {
             const newOtp = [...otp];
             newOtp[lastFilledIndex] = '';
             setOtp(newOtp);
+            setOtpError('');
             setShowResendSuccess(false);
         }
     };
 
     // Handle OTP verification
-    const handleContinue = async () => {
+    const handleVerifyOtp = async () => {
         const otpCode = otp.join('');
 
         if (otpCode.length !== 6) return;
 
         try {
-            router.push('/onboarding/gender-selection');
+            router.push('/auth/new-password');
+            // setOtpError('Invalid OTP! Please re-enter correctly');
         } catch (error) {
-            Alert.alert('Error', 'Invalid verification code. Please try again.');
+            setOtpError('Invalid OTP! Please re-enter correctly');
         }
     };
 
@@ -90,10 +93,12 @@ export default function EmailVerification() {
         if (!canResend) return;
 
         try {
+            // TODO: Make API call to resend OTP
             setTimer(90);
             setCanResend(false);
             setShowResendSuccess(true);
             setOtp(['', '', '', '', '', '']);
+            setOtpError('');
 
             // Hide success message after 3 seconds
             setTimeout(() => {
@@ -115,11 +120,12 @@ export default function EmailVerification() {
                 <BackButton onPress={() => router.back()} />
             </View>
 
-            <View style={styles.flex}>
+            <View style={styles.content}>
                 {/* Title */}
-                <Text style={styles.title}>Email Verification</Text>
+                <Text style={styles.title}>Forgot Password</Text>
                 <Text style={styles.subtitle}>
-                    We've sent a 6-digit code to your email
+                    We've sent a code to{' '}
+                    <Text style={styles.identifier}>{identifier}</Text>
                 </Text>
 
                 {/* OTP Input Boxes */}
@@ -130,6 +136,7 @@ export default function EmailVerification() {
                             style={[
                                 styles.otpBox,
                                 digit !== '' && styles.otpBoxFilled,
+                                otpError && styles.otpBoxError
                             ]}
                         >
                             <Text style={styles.otpDigit}>{digit}</Text>
@@ -137,10 +144,15 @@ export default function EmailVerification() {
                     ))}
                 </View>
 
+                {/* Error Message */}
+                {otpError && (
+                    <Text style={styles.otpErrorText}>{otpError}</Text>
+                )}
+
                 {/* Continue Button */}
                 <TouchableOpacity
                     style={[styles.continueButton, !isOtpComplete && styles.continueButtonDisabled]}
-                    onPress={handleContinue}
+                    onPress={handleVerifyOtp}
                     disabled={!isOtpComplete}
                 >
                     <Text style={styles.continueButtonText}>Continue</Text>
@@ -160,7 +172,7 @@ export default function EmailVerification() {
                 {showResendSuccess && (
                     <View style={styles.successMessage}>
                         <Text style={styles.successText}>
-                            A new OTP has been sent to your email
+                            A new OTP has been sent to your {method === 'email' ? 'email' : 'phone'}
                         </Text>
                         <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
                     </View>
@@ -169,7 +181,10 @@ export default function EmailVerification() {
                 <View style={styles.keyboardSpacer} />
 
                 {/* Custom Numeric Keyboard */}
-                <NumericKeyboard onPress={handleOtpPress} onDelete={handleOtpDelete} />
+                <View style={{ marginBottom: 30 }}>
+                    <NumericKeyboard onPress={handleOtpPress} onDelete={handleOtpDelete} />
+                </View>
+                
             </View>
         </SafeAreaView>
     );
@@ -180,19 +195,13 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
     },
-    flex: {
+    content: {
         flex: 1,
         paddingHorizontal: 24,
         paddingTop: 70,
     },
-    backButton: {
-        width: 40,
-        height: 40,
-        justifyContent: 'center',
-        marginBottom: 16,
-    },
     title: {
-        fontSize: 24,
+        fontSize: 28,
         fontWeight: '700',
         color: '#1a1a1a',
         marginBottom: 8,
@@ -203,11 +212,15 @@ const styles = StyleSheet.create({
         marginBottom: 32,
         lineHeight: 20,
     },
+    identifier: {
+        color: '#1a1a1a',
+        fontWeight: '600',
+    },
     otpContainer: {
         flexDirection: 'row',
         justifyContent: 'center',
         gap: 12,
-        marginBottom: 20,
+        marginBottom: 16,
     },
     otpBox: {
         width: 48,
@@ -223,10 +236,36 @@ const styles = StyleSheet.create({
         borderColor: '#484ED4',
         backgroundColor: '#F5F7FF',
     },
+    otpBoxError: {
+        borderColor: '#FF6B6B',
+        backgroundColor: '#FFF5F5',
+    },
     otpDigit: {
         fontSize: 24,
         fontWeight: '600',
         color: '#1a1a1a',
+    },
+    otpErrorText: {
+        color: '#FF6B6B',
+        fontSize: 13,
+        textAlign: 'start',
+        marginBottom: 16,
+    },
+    successMessage: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between' ,
+        backgroundColor: 'rgba(49, 159, 67, 0.05)',
+        paddingVertical: 12,
+        paddingHorizontal: 16,
+        borderRadius: 8,
+        marginBottom: 16,
+        gap: 20,
+    },
+    successText: {
+        color: '#319F43',
+        fontSize: 13,
+        fontWeight: '500',
     },
     continueButton: {
         backgroundColor: '#484ED4',
@@ -234,9 +273,10 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         alignItems: 'center',
         marginBottom: 16,
+        marginTop: 8,
     },
     continueButtonDisabled: {
-        backgroundColor: 'rgba(72, 78, 212, 0.2)',
+        backgroundColor: '#D9DFFE',
     },
     continueButtonText: {
         color: '#fff',
@@ -245,7 +285,7 @@ const styles = StyleSheet.create({
     },
     timerContainer: {
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: 24,
     },
     timerText: {
         fontSize: 16,
@@ -260,22 +300,6 @@ const styles = StyleSheet.create({
     },
     resendTextActive: {
         color: '#484ED4',
-    },
-    successMessage: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#E8F5E9',
-        paddingVertical: 12,
-        paddingHorizontal: 16,
-        borderRadius: 8,
-        marginBottom: 16,
-        gap: 8,
-    },
-    successText: {
-        color: '#4CAF50',
-        fontSize: 13,
-        fontWeight: '500',
     },
     keyboardSpacer: {
         flex: 1,

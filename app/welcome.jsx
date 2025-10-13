@@ -83,5 +83,5 @@ const styles = StyleSheet.create({
   welcomeText: { color: 'white', fontSize: 24, fontWeight: 'bold' },
   brandText: { color: 'white', fontSize: 82, fontWeight: 'bold'},
   subtitle: { color: 'rgba(255,255,255,0.9)', fontSize: 22, textAlign: 'center', lineHeight: 20 },
-  buttonContainer: { width: '100%' },
+  buttonContainer: { width: '100%', marginBottom: 40 },
 });
