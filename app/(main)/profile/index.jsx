@@ -1,33 +1,38 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import BackButton from '../../../components/back-button';
 
 export default function Profile() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('badges'); // 'badges' or 'leaderboard'
+  const [activeTab, setActiveTab] = useState('badges');
+  const [showVerificationBanner, setShowVerificationBanner] = useState(true);
 
   const badges = [
     {
       id: 1,
       title: 'Early Bird',
-      subtitle: '5/5 events attended',
+      subtitle: '2/5 events attended',
       icon: '🏅',
-      earned: true
+      earned: true,
+      progress: 0.4  // 40% filled
     },
     {
       id: 2,
       title: 'Regular',
-      subtitle: '15/20 events attended',
+      subtitle: '0/10 events attended',
       icon: '🏅',
-      earned: false
+      earned: false,
+      progress: 0  // Empty bar
     },
     {
       id: 3,
       title: 'Premium',
-      subtitle: '50/100 for premium upgrade',
+      subtitle: 'N9,999 for premium upgrade',
       icon: '🏅',
-      earned: false
+      earned: false,
+      progress: 0  // Empty bar
     }
   ];
 
@@ -56,33 +61,33 @@ export default function Profile() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#000" />
-        </TouchableOpacity>
+        <View style={styles.backButtonContainer}>
+          <BackButton onPress={() => router.back()} />
+        </View>
         <Text style={styles.headerTitle}>Your Profile</Text>
-        <View style={{ width: 24 }} />
+        <View style={styles.headerSpacer} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Profile Card */}
         <View style={styles.profileCard}>
           <View style={styles.profileImageContainer}>
-            <Image 
-              source={{ uri: 'https://via.placeholder.com/100' }} 
+            <Image
+              source={{ uri: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200' }}
               style={styles.profileImage}
             />
           </View>
-          
+
           <View style={styles.nameContainer}>
             <Text style={styles.profileName}>John Doe, 25</Text>
-            <TouchableOpacity>
-              <Ionicons name="create-outline" size={16} color="#666" />
+            <TouchableOpacity onPress={() => router.push('/profile/edit-profile')}>
+              <Ionicons name="create-outline" size={20} color="#FFF" />
             </TouchableOpacity>
           </View>
 
           <View style={styles.hostBadge}>
-            <Ionicons name="flame" size={14} color="#FF6B6B" />
-            <Text style={styles.hostText}>Host</Text>
+            <Ionicons name="flame" size={16} color="#13BEBB" />
+            <Text style={styles.hostText}>Flex</Text>
           </View>
 
           {/* Stats */}
@@ -102,11 +107,36 @@ export default function Profile() {
           </View>
         </View>
 
+        {/* ID Verification Banner */}
+        {showVerificationBanner && (
+          <TouchableOpacity 
+            style={styles.verificationBanner}
+            onPress={() => {
+              // Handle navigation to ID verification
+              console.log('Navigate to ID verification');
+            }}
+          >
+            <View style={styles.verificationBannerContent}>
+              <View style={styles.verificationContent}>
+                <Text style={styles.verificationTitle}>Complete ID Verification</Text>
+                <Text style={styles.verificationSubtitle}>
+                  Finish verifying your ID to enjoy flexin
+                </Text>
+                {/* Progress Bar */}
+                <View style={styles.verificationProgressBar}>
+                  <View style={styles.verificationProgressFill} />
+                </View>
+              </View>
+              <Ionicons name="chevron-forward" size={24} color="#FFF" />
+            </View>
+          </TouchableOpacity>
+        )}
+
         {/* Tabs Section */}
         <View style={styles.section}>
           {/* Tab Headers */}
           <View style={styles.tabHeader}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.tab}
               onPress={() => setActiveTab('badges')}
             >
@@ -119,7 +149,7 @@ export default function Profile() {
               {activeTab === 'badges' && <View style={styles.tabIndicator} />}
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.tab}
               onPress={() => setActiveTab('leaderboard')}
             >
@@ -145,15 +175,15 @@ export default function Profile() {
                     </View>
                     <View style={styles.badgeInfo}>
                       <Text style={styles.badgeTitle}>{badge.title}</Text>
+
+                      <View style={styles.progressBar}>
+                        <View style={[styles.progressFill, { width: `${badge.progress * 100}%` }]} />
+                      </View>
+
                       <Text style={styles.badgeSubtitle}>{badge.subtitle}</Text>
-                      {badge.earned && (
-                        <View style={styles.progressBar}>
-                          <View style={styles.progressFill} />
-                        </View>
-                      )}
                     </View>
                   </View>
-                  <Text style={styles.badgeEmoji}>👍</Text>
+                  <Text style={styles.lockEmoji}>🔒</Text>
                 </View>
               ))}
             </View>
@@ -163,72 +193,94 @@ export default function Profile() {
               <View style={styles.leaderboardHeader}>
                 <Text style={styles.leaderboardTitle}>Life of the party</Text>
                 <Text style={styles.leaderboardSubtitle}>
-                  You're currently ranked 15th with 12 events. Keep partCCoding to climb higher!
+                  You're currently ranked 15th with 12 events. Keep partying to climb higher!
                 </Text>
               </View>
 
+              <View style={{ backgroundColor: '#efeff5', width: 'full', height: 1, marginVertical: 20, marginTop: 8 }}></View>
+
               <View style={styles.leaderboardGrid}>
-                {leaderboardUsers.map((user) => (
-                  <View key={user.id} style={styles.leaderboardCard}>
-                    <View style={styles.leaderboardImageWrapper}>
-                      <Image 
-                        source={{ uri: user.image }} 
-                        style={styles.leaderboardUserImage}
-                      />
+                <View style={styles.leaderboardUsersContainer}>
+                  {leaderboardUsers.map((user) => (
+                    <View key={user.id} style={styles.leaderboardCard}>
+                      <View>
+                        <View style={styles.leaderboardImageWrapper}>
+                          <Image
+                            source={{ uri: user.image }}
+                            style={styles.leaderboardUserImage}
+                          />
+                        </View>
+                        <Text style={styles.leaderboardPlace}>{user.place}</Text>
+                      </View>
+                      <Text style={styles.leaderboardEvents}>{user.events}</Text>
                     </View>
-                    <Text style={styles.leaderboardPlace}>{user.place}</Text>
-                    <Text style={styles.leaderboardEvents}>{user.events}</Text>
-                  </View>
-                ))}
+                  ))}
+                </View>
 
                 {/* Arrow Button */}
                 <TouchableOpacity style={styles.arrowButton}>
-                  <Ionicons name="arrow-forward" size={24} color="#FFF" />
+                  <Feather name="chevron-right" size={24} color="#FFF" />
                 </TouchableOpacity>
               </View>
             </View>
           )}
         </View>
 
-        {/* Add padding at bottom for tab bar */}
-        <View style={{ height: 20 }} />
+        {/* Bottom spacing */}
+        <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // Container
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#ffffff',
   },
+
+  // Header Styles
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
     paddingTop: 50,
-    backgroundColor: '#FFF',
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
     color: '#000',
+    paddingTop: 10,
   },
+  backButtonContainer: {
+    bottom: 70,
+    left: -20,
+  },
+  headerSpacer: {
+    width: 24,
+  },
+
+  // Profile Card Styles
   profileCard: {
-    backgroundColor: '#FFF',
+    backgroundColor: '#13bebb',
     margin: 16,
-    borderRadius: 16,
-    padding: 20,
+    borderRadius: 20,
+    padding: 24,
     alignItems: 'center',
+    marginTop: 70,
   },
   profileImageContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: '#00BFA6',
+    width: 120,
+    height: 120,
+    borderRadius: 20,
+    backgroundColor: '#FFF',
+    marginTop: -70,
     marginBottom: 16,
     overflow: 'hidden',
+    borderWidth: 4,
+    borderColor: '#13BEBB',
   },
   profileImage: {
     width: '100%',
@@ -237,51 +289,100 @@ const styles = StyleSheet.create({
   nameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
+    gap: 8,
   },
   profileName: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#000',
-    marginRight: 8,
+    color: '#FFF',
   },
   hostBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#FFE5E5',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 20,
+    backgroundColor: '#FFF',
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    borderRadius: 10,
+    marginBottom: 24,
+    gap: 4,
   },
   hostText: {
-    fontSize: 12,
-    color: '#FF6B6B',
-    marginLeft: 4,
+    fontSize: 16,
+    color: '#13BEBB',
     fontWeight: '500',
   },
+
+  // Stats Styles
   statsRow: {
     flexDirection: 'row',
     width: '100%',
-    backgroundColor: '#00BFA6',
     borderRadius: 12,
-    padding: 16,
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
+    gap: 10,
   },
   statBox: {
+    flex: 1,
     alignItems: 'center',
+    backgroundColor: 'rgb(31,193,190)',
+    paddingVertical: 20,
+    paddingHorizontal: 12,
+    borderRadius: 12,
   },
   statNumber: {
-    fontSize: 20,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#FFF',
     marginBottom: 4,
   },
   statLabel: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#FFF',
     textAlign: 'center',
   },
+
+  // ID Verification Banner
+  verificationBanner: {
+    backgroundColor: '#484ED4',
+    marginHorizontal: 16,
+    marginBottom: 16,
+    borderRadius: 12,
+    padding: 16,
+  },
+  verificationBannerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  verificationContent: {
+    flex: 1,
+  },
+  verificationTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#FFF',
+    marginBottom: 4,
+  },
+  verificationSubtitle: {
+    fontSize: 13,
+    color: '#FFF',
+    opacity: 0.9,
+    marginBottom: 12,
+  },
+  verificationProgressBar: {
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    borderRadius: 2,
+    overflow: 'hidden',
+  },
+  verificationProgressFill: {
+    height: '100%',
+    width: '60%', // Adjust this to match the progress in your image
+    backgroundColor: '#FFF',
+    borderRadius: 2,
+  },
+
+  // Section and Tab Styles
   section: {
     backgroundColor: '#FFF',
     marginHorizontal: 16,
@@ -291,12 +392,13 @@ const styles = StyleSheet.create({
   },
   tabHeader: {
     flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    // borderBottomWidth: 1,
+    // borderBottomColor: '#F0F0F0',
+    gap: 20,
   },
   tab: {
-    flex: 1,
-    paddingVertical: 16,
+    paddingTop: 16,
+    paddingBottom: 8,
     alignItems: 'center',
     position: 'relative',
   },
@@ -306,27 +408,32 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   tabTextActive: {
-    color: '#5B4FFF',
+    color: '#484ED4',
     fontWeight: '600',
   },
   tabIndicator: {
     position: 'absolute',
     bottom: 0,
-    left: 0,
-    right: 0,
+    left: '25%',
+    right: '25%',
     height: 3,
-    backgroundColor: '#5B4FFF',
+    backgroundColor: '#484ED4',
+    borderRadius: 1.5,
   },
+
+  // Badge Styles
   tabContent: {
     padding: 16,
+    backgroundColor: '#F6F6FD',
+    borderRadius: 12,
+    marginTop: 12,
   },
   badgeItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    padding: 10,
+    marginBottom: 4,
   },
   badgeLeft: {
     flexDirection: 'row',
@@ -334,49 +441,53 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   badgeIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#FFF4E6',
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#FFD700',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
   badgeEmoji: {
+    fontSize: 28,
+  },
+  lockEmoji: {
     fontSize: 24,
   },
   badgeInfo: {
     flex: 1,
   },
   badgeTitle: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '500',
     color: '#000',
-    marginBottom: 2,
+    marginBottom: 6,
   },
   badgeSubtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#999',
-    marginBottom: 4,
+    marginTop: 4,
   },
   progressBar: {
-    height: 4,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 2,
-    marginTop: 4,
+    height: 6,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 3,
     width: '100%',
+    overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#00BFA6',
-    borderRadius: 2,
-    width: '100%',
+    backgroundColor: '#484ED4',
+    borderRadius: 3,
   },
+
+  // Leaderboard Styles
   leaderboardHeader: {
-    backgroundColor: '#F8F4FF',
-    padding: 16,
+    backgroundColor: '#F6F6FD',
+    padding: 10,
     borderRadius: 12,
-    marginBottom: 16,
+    // marginBottom: 16,
   },
   leaderboardTitle: {
     fontSize: 16,
@@ -385,18 +496,21 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   leaderboardSubtitle: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#666',
     lineHeight: 18,
   },
   leaderboardGrid: {
     flexDirection: 'row',
+    alignItems: "center",
     justifyContent: 'space-between',
-    alignItems: 'flex-end',
+  },
+  leaderboardUsersContainer: {
+    flexDirection: 'row',
+    gap: 30,
   },
   leaderboardCard: {
     alignItems: 'center',
-    flex: 1,
   },
   leaderboardImageWrapper: {
     width: 50,
@@ -413,7 +527,7 @@ const styles = StyleSheet.create({
   leaderboardPlace: {
     fontSize: 12,
     fontWeight: '600',
-    color: '#000',
+    color: '#484ED4',
     marginBottom: 2,
   },
   leaderboardEvents: {
@@ -423,10 +537,15 @@ const styles = StyleSheet.create({
   arrowButton: {
     width: 44,
     height: 44,
-    borderRadius: 22,
-    backgroundColor: '#5B4FFF',
+    borderRadius: 12,
+    backgroundColor: '#484ED4',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 8,
+  },
+
+  // Utility Styles
+  bottomSpacer: {
+    height: 100,
   },
 });

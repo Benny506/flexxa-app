@@ -17,9 +17,9 @@ export default function BackButton({
 
 const styles = StyleSheet.create({
   backButton: {
-    // position: 'absolute',
-    // top: 50,
-    // left: 24,
+    position: 'absolute',
+    top: 50,
+    left: 24,
     width: 44,
     height: 44,
     backgroundColor: '#FFFFFF',
@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 2,
     zIndex: 10,
   },
 });

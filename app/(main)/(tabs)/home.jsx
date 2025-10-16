@@ -15,8 +15,8 @@ export default function HomeScreen() {
   const events = [
     {
       id: 1,
-      date: { month: 'OCT', day: '20' },
-      title: 'Blidde Pool Party',
+      date: { month: 'oct', day: '20' },
+      title: 'Bikini Pool Party',
       time: 'Fri, 12:00pm - 10:00pm',
       location: 'Chez gardens, legos',
       price: '₦4,000',
@@ -24,7 +24,7 @@ export default function HomeScreen() {
     },
     {
       id: 2,
-      date: { month: 'DEC', day: '21' },
+      date: { month: 'dec', day: '21' },
       title: 'Owonishoki Street Carnival',
       time: 'Sat, 12:00pm - 5:00pm',
       location: 'Owonishoki street, lagos',
@@ -33,25 +33,45 @@ export default function HomeScreen() {
     }
   ];
 
+  const handleProfilePress = () => {
+    router.push('/profile')
+  }
+
+  const handleNotificationPress = () => {
+    router.push('/notifications');
+  };
+
+  const handleEventPress = (eventId) => {
+    // Navigate to event details
+    // console.log('Event pressed:', eventId);
+  };
+
+  const handleViewInvitations = () => {
+    // Navigate to invitations
+    // console.log('View invitations pressed');
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <Image 
-            source={{ uri: 'https://via.placeholder.com/40' }} 
-            style={styles.profileImage}
-          />
+        <View style={styles.headerLeft} >
+          <TouchableOpacity onPress={handleProfilePress}>
+            <Image
+              source={{ uri: 'https://via.placeholder.com/40' }}
+              style={styles.profileImage}
+            />
+          </TouchableOpacity>
           <View>
             <Text style={styles.headerName}>John Doe</Text>
-            <Text style={styles.headerHandle}>@JohnDoe</Text>
+            <Text style={styles.headerHandle}>Life of the party!</Text>
           </View>
         </View>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.notificationBadge}
-          onPress={() => router.push('/notifications')}
+          onPress={handleNotificationPress}
         >
-          <Ionicons name="notifications-outline" size={24} color="#000" />
+          <Ionicons name="notifications" size={22} color="#000" />
           <View style={styles.badge} />
         </TouchableOpacity>
       </View>
@@ -63,12 +83,12 @@ export default function HomeScreen() {
             <Text style={styles.statNumber}>{userStats.eventsAttended}</Text>
             <Text style={styles.statLabel}>Events Attended</Text>
           </View>
-          <View style={styles.statDivider} />
+
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>{userStats.eventsCreated}</Text>
             <Text style={styles.statLabel}>Events Created</Text>
           </View>
-          <View style={styles.statDivider} />
+
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>{userStats.eventsHosting}</Text>
             <Text style={styles.statLabel}>Events Hosting</Text>
@@ -77,20 +97,22 @@ export default function HomeScreen() {
 
         {/* For Requests Section */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>For Requests</Text>
+          <Text style={styles.sectionTitle}>Flexr Requests</Text>
         </View>
 
         {/* Events List */}
         {events.map((event) => (
-          <TouchableOpacity 
-            key={event.id} 
+          <TouchableOpacity
+            key={event.id}
             style={styles.eventCard}
-            onPress={() => {/* Navigate to event details */}}
+            onPress={() => handleEventPress(event.id)}
           >
             <View style={styles.eventDate}>
               <Text style={styles.eventMonth}>{event.date.month}</Text>
               <Text style={styles.eventDay}>{event.date.day}</Text>
             </View>
+
+            <View style={styles.divider} />
 
             <View style={styles.eventDetails}>
               <View style={styles.eventHeader}>
@@ -107,42 +129,52 @@ export default function HomeScreen() {
               <Text style={styles.eventPrice}>{event.price}</Text>
             </View>
 
-            <Ionicons name="chevron-forward" size={20} color="#999" />
+            <Ionicons
+              name="chevron-forward"
+              size={24}
+              color="#1E1E1E"
+              style={styles.chevronIcon}
+            />
           </TouchableOpacity>
         ))}
 
-        <TouchableOpacity style={styles.viewInvitationsBtn}>
+        <TouchableOpacity
+          style={styles.viewInvitationsBtn}
+          onPress={handleViewInvitations}
+        >
           <Text style={styles.viewInvitationsText}>View Invitations</Text>
         </TouchableOpacity>
 
-        {/* Add padding at bottom for tab bar */}
-        <View style={{ height: 20 }} />
+        {/* Bottom spacing for tab bar */}
+        <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // Container
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FFFFFF',
   },
+
+  // Header Styles
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: 16,
     paddingTop: 50,
-    backgroundColor: '#FFF',
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   profileImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 42,
+    height: 42,
+    borderRadius: 8,
     backgroundColor: '#E0E0E0',
     marginRight: 12,
   },
@@ -157,6 +189,9 @@ const styles = StyleSheet.create({
   },
   notificationBadge: {
     position: 'relative',
+    backgroundColor: 'rgb(251,245,249)',
+    padding: 8,
+    borderRadius: 8,
   },
   badge: {
     position: 'absolute',
@@ -167,16 +202,23 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: '#FF4444',
   },
+
+  // Stats Card Styles
   statsCard: {
     flexDirection: 'row',
-    backgroundColor: '#00BFA6',
+    backgroundColor: 'rgb(19,190,187)',
     margin: 16,
-    padding: 20,
+    padding: 14,
     borderRadius: 16,
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
   },
   statItem: {
+    flex: 1,
     alignItems: 'center',
+    backgroundColor: 'rgb(31,193,190)',
+    paddingVertical: 20,
+    paddingHorizontal: 12,
+    borderRadius: 12,
   },
   statNumber: {
     fontSize: 24,
@@ -189,43 +231,52 @@ const styles = StyleSheet.create({
     color: '#FFF',
     textAlign: 'center',
   },
-  statDivider: {
-    width: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-  },
+
+  // Section Header Styles
   sectionHeader: {
     paddingHorizontal: 16,
     marginBottom: 12,
+    marginTop: 10,
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '400',
     color: '#000',
   },
+
+  // Event Card Styles
   eventCard: {
     flexDirection: 'row',
-    backgroundColor: '#FFF',
+    backgroundColor: 'rgb(246,246,253)',
     marginHorizontal: 16,
     marginBottom: 12,
-    padding: 16,
+    padding: 18,
     borderRadius: 12,
     alignItems: 'center',
   },
   eventDate: {
-    width: 50,
     alignItems: 'center',
-    marginRight: 16,
+    justifyContent: 'flex-start',
+    marginBottom: 40,
   },
   eventMonth: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#999',
+    fontSize: 16,
+    fontWeight: '400',
+    color: '#1E1E1E',
   },
   eventDay: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#000',
+    fontSize: 16,
+    fontWeight: '400',
+    color: '#1E1E1E',
   },
+  divider: {
+    width: 1,
+    backgroundColor: 'rgb(229,229,249)',
+    marginHorizontal: 16,
+    alignSelf: 'stretch',
+  },
+
+  // Event Details Styles
   eventDetails: {
     flex: 1,
   },
@@ -233,25 +284,28 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   eventTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '500',
     color: '#000',
     flex: 1,
   },
   eventStatus: {
     fontSize: 12,
     fontWeight: '500',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingHorizontal: 10,
+    paddingVertical: 3,
+    borderRadius: 10,
   },
   statusReply: {
-    color: '#FF1493',
+    color: 'rgb(215,96,160)',
+    backgroundColor: 'rgb(244,236,247)',
   },
   statusIssue: {
-    color: '#8B7FFF',
+    color: 'rgb(86,92,215)',
+    backgroundColor: 'rgb(237,238,251)',
   },
   eventTime: {
     fontSize: 12,
@@ -261,21 +315,32 @@ const styles = StyleSheet.create({
   eventLocation: {
     fontSize: 12,
     color: '#666',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   eventPrice: {
     fontSize: 14,
     fontWeight: '600',
     color: '#000',
   },
+  chevronIcon: {
+    position: 'absolute',
+    right: 40,
+    bottom: 20,
+  },
+
+  // View Invitations Button
   viewInvitationsBtn: {
-    margin: 16,
-    padding: 12,
-    alignItems: 'center',
+    padding: 16,
+    alignItems: 'flex-end',
   },
   viewInvitationsText: {
-    color: '#00BFA6',
+    color: '#484ED4',
     fontSize: 14,
     fontWeight: '500',
+  },
+
+  // Utility Styles
+  bottomSpacer: {
+    height: 20,
   },
 });

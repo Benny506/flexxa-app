@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+// import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import BackButton from '../../../components/back-button';
 
 export default function Notifications() {
   const router = useRouter();
@@ -13,10 +14,9 @@ export default function Notifications() {
         type: 'event',
         icon: '🎉',
         iconBg: '#E3F2FD',
-        title: "You've attended the tenth date! Life of the Party",
-        description: 'You can know consider all given...',
+        title: "You've unlocked the next stage: Life of the Party!",
+        description: 'Dorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.',
         time: '2 mins ago',
-        action: 'View invite'
       },
       {
         id: 2,
@@ -24,16 +24,16 @@ export default function Notifications() {
         icon: '🎊',
         iconBg: '#FCE4EC',
         title: "You've been invited to Beach Party",
-        time: '3 mins ago',
+        time: '2 mins ago',
         action: 'View invite'
       },
       {
         id: 3,
         type: 'comment',
-        icon: '👤',
+        icon: '💬',
         iconBg: '#E8EAF6',
-        title: 'John Doe commented on your post',
-        time: '3 mins ago',
+        title: 'John Doe commented on your post.',
+        time: '2 mins ago',
         action: 'View comment'
       }
     ],
@@ -43,10 +43,9 @@ export default function Notifications() {
         type: 'event',
         icon: '🎉',
         iconBg: '#E3F2FD',
-        title: "You've attended the tenth date! Life of the Party",
-        description: 'You can know consider all given...',
-        time: '2 days ago',
-        action: 'View invite'
+        title: "You've unlocked the next stage: Life of the Party!",
+        description: 'Dorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.',
+        time: '2 mins ago',
       },
       {
         id: 5,
@@ -54,16 +53,16 @@ export default function Notifications() {
         icon: '🎊',
         iconBg: '#FCE4EC',
         title: "You've been invited to Beach Party",
-        time: '2 days ago',
+        time: '2 mins ago',
         action: 'View invite'
       },
       {
         id: 6,
         type: 'comment',
-        icon: '👤',
+        icon: '💬',
         iconBg: '#E8EAF6',
-        title: 'John Doe commented on your post',
-        time: '2 days ago',
+        title: 'John Doe commented on your post.',
+        time: '2 mins ago',
         action: 'View comment'
       }
     ],
@@ -73,10 +72,9 @@ export default function Notifications() {
         type: 'event',
         icon: '🎉',
         iconBg: '#E3F2FD',
-        title: "You've attended the tenth date! Life of the Party",
-        description: 'You can know consider all given...',
-        time: '5 days ago',
-        action: 'View invite'
+        title: "You've unlocked the next stage: Life of the Party!",
+        description: 'Dorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc vulputate libero et velit interdum, ac aliquet odio mattis.',
+        time: '2 mins ago',
       },
       {
         id: 8,
@@ -84,16 +82,16 @@ export default function Notifications() {
         icon: '🎊',
         iconBg: '#FCE4EC',
         title: "You've been invited to Beach Party",
-        time: '5 days ago',
+        time: '2 mins ago',
         action: 'View invite'
       },
       {
         id: 9,
         type: 'comment',
-        icon: '👤',
+        icon: '💬',
         iconBg: '#E8EAF6',
-        title: 'John Doe commented on your post',
-        time: '5 days ago',
+        title: 'John Doe commented on your post.',
+        time: '2 mins ago',
         action: 'View comment'
       }
     ]
@@ -104,18 +102,22 @@ export default function Notifications() {
       <View style={[styles.iconContainer, { backgroundColor: item.iconBg }]}>
         <Text style={styles.iconEmoji}>{item.icon}</Text>
       </View>
-      
+
       <View style={styles.notificationContent}>
-        <Text style={styles.notificationTitle}>{item.title}</Text>
+        <View style={styles.titleRow}>
+          <Text style={styles.notificationTitle}>{item.title}</Text>
+          <Text style={styles.notificationTime}>{item.time}</Text>
+        </View>
+
         {item.description && (
           <Text style={styles.notificationDescription}>{item.description}</Text>
         )}
-        <View style={styles.notificationFooter}>
-          <Text style={styles.notificationTime}>{item.time}</Text>
-          <TouchableOpacity>
+
+        {item.action && (
+          <TouchableOpacity style={styles.actionContainer}>
             <Text style={styles.actionLink}>{item.action}</Text>
           </TouchableOpacity>
-        </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -124,11 +126,11 @@ export default function Notifications() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#000" />
-        </TouchableOpacity>
+        <View style={styles.backButtonContainer}>
+          <BackButton onPress={() => router.back()} />
+        </View>
         <Text style={styles.headerTitle}>Notifications</Text>
-        <View style={{ width: 24 }} />
+        <View style={styles.headerSpacer} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -150,18 +152,21 @@ export default function Notifications() {
           {notifications.fiveDaysAgo.map(renderNotificationItem)}
         </View>
 
-        {/* Add padding at bottom for tab bar */}
-        <View style={{ height: 20 }} />
+        {/* Bottom spacing for tab bar */}
+        <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  // Container
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#FFFFFF',
   },
+
+  // Header Styles
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -174,27 +179,39 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#000',
+    paddingTop: 10,
   },
+  backButtonContainer: {
+    bottom: 70,
+    left: -20,
+  },
+  headerSpacer: {
+    width: 24,
+  },
+
+  // Section Styles
   section: {
     marginTop: 16,
+    paddingHorizontal: 16,
   },
   sectionTitle: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#999',
-    paddingHorizontal: 16,
-    marginBottom: 8,
+    color: '#1E1E1E',
+    marginBottom: 12,
   },
+
+  // Notification Item Styles
   notificationItem: {
     flexDirection: 'row',
     backgroundColor: '#FFF',
-    padding: 16,
-    marginBottom: 1,
+    paddingVertical: 16,
+    marginBottom: 8,
   },
   iconContainer: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 52,
+    height: 46,
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -202,34 +219,49 @@ const styles = StyleSheet.create({
   iconEmoji: {
     fontSize: 20,
   },
+
+  // Notification Content Styles
   notificationContent: {
     flex: 1,
   },
-  notificationTitle: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#000',
-    marginBottom: 4,
-    lineHeight: 20,
-  },
-  notificationDescription: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 8,
-    lineHeight: 18,
-  },
-  notificationFooter: {
+  titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
+    marginBottom: 4,
+  },
+  notificationTitle: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#000',
+    lineHeight: 20,
+    flex: 1,
+    marginRight: 8,
   },
   notificationTime: {
     fontSize: 12,
     color: '#999',
+    paddingRight: 14,
+  },
+  notificationDescription: {
+    fontSize: 12,
+    color: '#666',
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+
+  // Action Styles
+  actionContainer: {
+    marginTop: 4,
   },
   actionLink: {
     fontSize: 12,
-    color: '#00BFA6',
+    color: '#484ED4',
     fontWeight: '500',
+  },
+
+  // Utility Styles
+  bottomSpacer: {
+    height: 100,
   },
 });
