@@ -10,16 +10,16 @@ export default function TabsLayout() {
         tabBarActiveTintColor: '#484ED4',
         tabBarInactiveTintColor: '#999',
         tabBarStyle: {
-          paddingBottom: 20,
+          // paddingBottom: 20,
           paddingTop: 8,
           height: 70,
-          backgroundColor: '#FFF',
+          backgroundColor: '#FFFFFF',
           borderTopWidth: 1,
           borderTopColor: '#E0E0E0',
         },
         tabBarShowLabel: false,
         tabBarItemStyle: {
-          paddingVertical: 4,
+          paddingVertical: 8,
           gap: 4,
         }
       }}
@@ -40,7 +40,7 @@ export default function TabsLayout() {
                 color: color, 
                 marginTop: 4,
                 fontWeight: '500'
-              }}>
+              }} numberOfLines={1}>
                 Home
               </Text>
               {focused && (
@@ -64,7 +64,7 @@ export default function TabsLayout() {
         options={{
           title: 'Request',
           tabBarIcon: ({ color, focused }) => (
-            <View style={{ alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+            <View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', minWidth: 60 }}>
               <Ionicons 
                 name={focused ? "calendar" : "calendar-outline"} 
                 size={24} 
@@ -75,7 +75,7 @@ export default function TabsLayout() {
                 color: color, 
                 marginTop: 4,
                 fontWeight: '500'
-              }}>
+              }} numberOfLines={1}>
                 Request
               </Text>
               {focused && (
@@ -99,7 +99,7 @@ export default function TabsLayout() {
         options={{
           title: 'Earnings',
           tabBarIcon: ({ color, focused }) => (
-            <View style={{ alignItems: 'center', justifyContent: 'center', width: '100%' }}>
+            <View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', minWidth: 60 }}>
               <Ionicons 
                 name={focused ? "wallet" : "wallet-outline"} 
                 size={24} 
@@ -110,7 +110,7 @@ export default function TabsLayout() {
                 color: color, 
                 marginTop: 4,
                 fontWeight: '500'
-              }}>
+              }} numberOfLines={1}>
                 Earnings
               </Text>
               {focused && (
@@ -145,7 +145,7 @@ export default function TabsLayout() {
                 color: color, 
                 marginTop: 4,
                 fontWeight: '500'
-              }}>
+              }} numberOfLines={1}>
               Hub
               </Text>
               {focused && (
@@ -181,7 +181,7 @@ export default function TabsLayout() {
                 marginTop: 4,
                 fontWeight: '500',
                 textAlign: 'center'
-              }}>
+              }} numberOfLines={1}>
                 Menu
               </Text>
               {focused && (
