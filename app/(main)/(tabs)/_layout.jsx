@@ -1,10 +1,11 @@
-import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { View, Text } from 'react-native';
+import { Tabs } from 'expo-router';
+import { Text, View } from 'react-native';
 
 export default function TabsLayout() {
   return (
     <Tabs 
+      initialRouteName='home'
       screenOptions={{ 
         headerShown: false,
         tabBarActiveTintColor: '#484ED4',

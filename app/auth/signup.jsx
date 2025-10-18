@@ -21,18 +21,24 @@ import * as yup from 'yup';
 
 import { useLocalSearchParams } from 'expo-router';
 import { ErrorMessage, Field, Formik } from 'formik';
+import { useDispatch } from 'react-redux';
 import Logo from '../../assets/images/flexxa-logo-2.png';
 import CustomDropDown from '../../components/dropdown/CustomDropDown';
 import ErrorMsg1 from '../../components/ErrorMsg1';
 import { fontFamilies, textSizes } from '../../components/stylesheets/globalStyleSheet';
 import { PHONE_COUNTRY_CODES } from '../../constants/constants';
+import { phoneNumberInUse } from '../../database/dbInit';
 import { useAppNavigation } from '../../hooks/useAppNavigation';
+import { setAppAlert } from '../../redux/slices/appAlertSlice';
+import { appLoadStart, appLoadStop } from '../../redux/slices/appLoadingSlice';
 import colors from '../../utils/colors/colors';
 import { passwordSchema } from '../../utils/yupSchemas/yupSchemas';
 
 const initialUsertype = 'Flex'
 
 export default function SignUpScreen() {
+    const dispatch = useDispatch()
+
     const router = useRouter();
 
     const { goBack } = useAppNavigation()
@@ -41,6 +47,7 @@ export default function SignUpScreen() {
 
     const [activeTab, setActiveTab] = useState(initialUsertype);
     const [showPassword, setShowPassword] = useState(false)
+    const [apiReqs, setApiReqs] = useState({ isLoading: false, errorMsg: null, data: null })
 
 
     useEffect(() => {
@@ -48,6 +55,60 @@ export default function SignUpScreen() {
             goBack()
         }
     }, [])
+
+    useEffect(() => {
+        const { isLoading, data } = apiReqs
+
+        if(isLoading) dispatch(appLoadStart());
+        else dispatch(appLoadStop());
+
+        if(isLoading && data){
+            const { type, requestInfo } = data
+
+            if(type === 'validatePhoneNumber'){
+                validatePhoneNumber({ requestInfo })
+            }
+        }
+    }, [apiReqs])
+
+
+    const validatePhoneNumber = async ({ requestInfo }) => {
+        try {
+
+            const { country_code, phone_number } = requestInfo
+
+            const { exists, error } = await phoneNumberInUse({ country_code, phone_number })
+
+            if(error) throw new Error();
+
+            setApiReqs({ isLoading: false, errorMsg: null, data: null })
+
+            if(exists) {
+                dispatch(setAppAlert({ msg: 'This phone number + country code combination is already in use by another user', type: 'info' }))
+                return;
+            }
+
+            router.push({
+                pathname: '/auth/terms-of-service',
+                params: {
+                    ...requestInfo,
+                    dob,
+                    usertype: activeTab
+                }
+            });            
+            
+        } catch (error) {
+            console.log(error)
+            return apiReqError({ errorMsg: 'Something went wrong! Try again.' })
+        }
+    }
+
+    const apiReqError = ({ errorMsg }) => {
+        setApiReqs({ isLoading: false, errorMsg, data: null })
+        dispatch(setAppAlert({ msg: errorMsg, type: 'error' }))
+
+        return;
+    }
 
 
     if (!dob) return <></>
@@ -102,14 +163,14 @@ export default function SignUpScreen() {
                             password: ''
                         }}
                         onSubmit={(values) => {
-                            router.push({
-                                pathname: '/auth/terms-of-service',
-                                params: {
-                                    ...values,
-                                    dob,
-                                    usertype: activeTab
+                            setApiReqs({
+                                isLoading: true,
+                                errorMsg: null,
+                                data: {
+                                    type: 'validatePhoneNumber',
+                                    requestInfo: values
                                 }
-                            });
+                            })
                         }}
                     >
                         {({ handleBlur, handleChange, handleSubmit, isValid, dirty, setFieldValue, values }) => (

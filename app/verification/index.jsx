@@ -1,30 +1,52 @@
-import React from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import {
-    View,
+    StatusBar,
+    StyleSheet,
     Text,
     TouchableOpacity,
-    StyleSheet,
-    StatusBar,
-    Image,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import FaceMesh from '../../assets/images/face-mesh.svg'
-import IdIcon from '../../assets/images/icons/id.svg'
-import SelfieIcon from '../../assets/images/icons/selfie.svg'
+import FaceMesh from '../../assets/images/face-mesh.svg';
+import IdIcon from '../../assets/images/icons/id.svg';
+import SelfieIcon from '../../assets/images/icons/selfie.svg';
+import BackButton from '../../components/back-button';
+import { useAppNavigation } from '../../hooks/useAppNavigation';
 
 export default function VerificationIndexScreen() {
+
+    const { goBack } = useAppNavigation()
+
     const router = useRouter();
+    const params = useLocalSearchParams()
+
+    useEffect(() => {
+        if(!params?.photos) {
+            goBack()
+        }
+    }, [])
+
+    if(!params?.photos) return;
 
     const handleStartVerification = () => {
-        router.push('/verification/upload-id');
+        router.push({
+            pathname: '/verification/upload-id',
+            params
+        });
     };
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
             <StatusBar barStyle="dark-content" />
             
+            <View style={{ paddingHorizontal: 24, marginBottom: 15 }}>
+                <BackButton
+                    onPress={goBack}
+                />
+            </View>            
+
             <View style={styles.content}>
                 {/* Face ID Illustration - Replace with your SVG/Image */}
                 <View style={styles.illustrationContainer}>

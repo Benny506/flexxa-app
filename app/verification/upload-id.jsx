@@ -1,22 +1,32 @@
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import * as DocumentPicker from 'expo-document-picker';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState } from 'react';
 import {
-    View,
+    Alert,
+    Modal,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
     Text,
     TouchableOpacity,
-    StyleSheet,
-    StatusBar,
-    ScrollView,
-    Modal,
-    Alert,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import * as DocumentPicker from 'expo-document-picker';
 import SkipButton from '../../components/skip-button';
+import useApiReqs from '../../hooks/useApiReqs';
+import { useAppNavigation } from '../../hooks/useAppNavigation';
 
 export default function UploadIDScreen() {
+
+    const { fullNavigateTo } = useAppNavigation()
+
     const router = useRouter();
+
+    const params = useLocalSearchParams()
+
+    const { updateProfile } = useApiReqs()
+
     const [selectedIDType, setSelectedIDType] = useState('');
     const [frontUploaded, setFrontUploaded] = useState(false);
     const [backUploaded, setBackUploaded] = useState(false);
@@ -63,7 +73,22 @@ export default function UploadIDScreen() {
 
     const handleVerifyLater = () => {
         setShowSkipModal(false);
-        router.push('/dashboard');
+        console.log(params)
+
+        fullNavigateTo({
+            path: '/(main)/(tabs)/home'
+        });
+        
+        //RESUME FROM PROFILE UPDATING
+
+        // updateProfile({
+        //     callBack: ({ updatedProfile }) => {
+        //         router.push('/(main)/(tabs)');
+        //     },
+        //     update: {
+
+        //     }
+        // })
     };
 
     const isFormComplete = selectedIDType && frontUploaded && backUploaded;

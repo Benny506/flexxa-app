@@ -105,7 +105,7 @@ export default function PrivacyPolicy() {
                     onPress={handleAccept}
                     disabled={!agreed}
                 >
-                    <Text style={styles.acceptButtonText}>Sign in</Text>
+                    <Text style={styles.acceptButtonText}>Create account</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>

@@ -2,12 +2,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-    Alert,
     StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
@@ -18,15 +17,15 @@ import { createOrUpdateOtp } from '../../database/dbInit';
 import { useAppNavigation } from '../../hooks/useAppNavigation';
 import { setAppAlert } from '../../redux/slices/appAlertSlice';
 import { appLoadStart, appLoadStop } from '../../redux/slices/appLoadingSlice';
+import { setUserDetails } from '../../redux/slices/userDetailsSlice';
 import { onRequestApi } from '../../utils/apiRequests/requestApi';
 
-const initialTimer = 10
-//work on otp validation and resending logic!
+const initialTimer = 90
 
 export default function EmailVerification() {
     const dispatch = useDispatch()
 
-    const { goBack } = useAppNavigation()
+    const { goBack, fullNavigateTo } = useAppNavigation()
 
     const params = useLocalSearchParams()
 
@@ -70,11 +69,121 @@ export default function EmailVerification() {
                     failureCallback: sendCodeToMailFailure
                 })
             }
+
+            if(type == 'validateCode'){
+                onRequestApi({
+                    requestInfo,
+                    successCallBack: validateCodeSuccess,
+                    failureCallback: validateCodeFailure
+                })
+            }
+
+            if(type === 'createUser'){
+                onRequestApi({
+                    requestInfo,
+                    successCallBack: createUserSuccess,
+                    failureCallback: createUserFailure
+                })
+            }
         }
     }, [apiReqs])
 
     // Timer countdown
+    // useEffect(() => {
+    //     let count = initialTimer
+
+    //     const interval = setInterval(() => {
+
+    //         if(count <= 1) {
+    //             setTimer(0);
+    //             clearInterval(interval)
+    //             return
+    //         }
+
+    //         count = count - 1
+
+    //         setTimer(count)
+    //     }, 1000);
+
+    //     return () => clearInterval(interval);
+    // }, []);
+
     useEffect(() => {
+        if(timer === initialTimer){
+            restartTimer()
+        }
+    }, [timer])
+
+    const createUserSuccess = async ({ result }) => {
+        try {
+
+            const { user, profile, session, phoneData } = result?.data
+
+            setApiReqs({ isLoading: false, errorMsg: null, data: null })
+
+            dispatch(setUserDetails({
+                user, profile, session, phoneData
+            }))
+
+            fullNavigateTo({
+                path: '/onboarding/gender-selection',
+                params
+            })
+            
+            dispatch(setAppAlert({ msg: 'Accont treated! Next -> Setup your profile', type: 'success' }))
+
+            return;
+            
+        } catch (error) {
+            console.log(error)
+            return createUserFailure({ errorMsg: 'Something went wrong! Try again', type: 'error' })
+        }
+    }
+    const createUserFailure = ({ errorMsg }) => {
+        setApiReqs({ isLoading: false, errorMsg: null, data: null })
+        dispatch(setAppAlert({ msg: errorMsg, type: 'error' }))
+
+        return;
+    }
+
+    const validateCodeSuccess = ({}) => {
+        try {
+
+            return setApiReqs({
+                isLoading: true,
+                errorMsg: null,
+                data: {
+                    type: 'createUser',
+                    requestInfo: {
+                        url: 'https://nknoqpcyjcxpoirzizgz.supabase.co/functions/v1/create-user',
+                        method: 'POST',
+                        data: {
+                            email: params?.email,
+                            password: params?.password,
+                            usertype: params?.usertype,
+                            full_name: params?.full_name,
+                            country_code: params?.country_code,
+                            phone_number: params?.phone_number,
+                            dob: params?.dob
+                        }
+                    }
+                }
+            })            
+
+            
+        } catch (error) {
+            console.log(error)
+            return validateCodeFailure({ errorMsg: 'Something went wrong! Try again.' })
+        }
+    }
+    const validateCodeFailure = ({ errorMsg }) => {
+        setApiReqs({ isLoading: false, errorMsg, data: null })
+        dispatch(setAppAlert({ msg: errorMsg, type: 'error' }))
+
+        return;
+    }    
+
+    const restartTimer = () => {
         let count = initialTimer
 
         const interval = setInterval(() => {
@@ -89,9 +198,7 @@ export default function EmailVerification() {
 
             setTimer(count)
         }, 1000);
-
-        return () => clearInterval(interval);
-    }, []);
+    }
 
     const initiateCreateOtp = () => {
         setShowResendSuccess(false)
@@ -223,9 +330,25 @@ export default function EmailVerification() {
         if (otpCode.length !== 6) return;
 
         try {
-            router.push('/onboarding/gender-selection');
+            setApiReqs({
+                isLoading: true, 
+                errorMsg: null,
+                data: {
+                    type: 'validateCode',
+                    requestInfo: {
+                        url: 'https://nknoqpcyjcxpoirzizgz.supabase.co/functions/v1/verify-code',
+                        method: 'POST',
+                        data: {
+                            code: otpCode,
+                            email: params?.email
+                        }
+                    }
+                }
+            })
+
         } catch (error) {
-            Alert.alert('Error', 'Invalid verification code. Please try again.');
+            dispatch(setAppAlert({ msg: 'Invalid verification code. Please try again.', type: 'error' }))
+            return;
         }
     };
 
@@ -283,15 +406,16 @@ export default function EmailVerification() {
 
                 {/* Timer and Resend */}
                 <View style={styles.timerContainer}>
-                    {/* <Text style={styles.timerText}>{formatTimer(timer)}</Text> */}
                     {
                         canResend
-                        &&
-                        <TouchableOpacity onPress={handleResendOtp} disabled={!canResend}>
-                            <Text style={[styles.resendText, canResend && styles.resendTextActive]}>
-                                Send again
-                            </Text>
-                        </TouchableOpacity>
+                        ?
+                            <TouchableOpacity onPress={handleResendOtp} disabled={!canResend}>
+                                <Text style={[styles.resendText, canResend && styles.resendTextActive]}>
+                                    Send again
+                                </Text>
+                            </TouchableOpacity>
+                        :
+                            <Text style={styles.timerText}>{formatTimer(timer)}</Text>                        
                     }
                 </View>
 

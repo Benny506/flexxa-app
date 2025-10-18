@@ -83,7 +83,7 @@ export const onRequestApi = async ({ requestInfo, successCallBack, failureCallba
 export async function getSignedUploadUrl({ id, bucket_name, ext }) {
     try {
         const { result, errorMsg } = await requestApi({
-            url: "https://tzsbbbxpdlupybfrgdbs.supabase.co/functions/v1/create-upload-url",
+            url: "https://nknoqpcyjcxpoirzizgz.supabase.co/functions/v1/create-upload-url",
             method: "POST",
             data: {
                 id,

@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
+import { useEffect } from 'react';
 import { getValue, setValue } from '../secureStore/secureStore';
 
 
@@ -11,7 +11,7 @@ export const getNotificationToken = async () => {
         let { status } = await Notifications.getPermissionsAsync();
         
         if (status !== 'granted') {
-          await Notifications.requestPermissionsAsync();
+          const request = await Notifications.requestPermissionsAsync();
           status = request.status;
         }
 

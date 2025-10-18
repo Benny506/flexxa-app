@@ -1,25 +1,44 @@
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-    View,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    StyleSheet,
-    StatusBar,
-    ScrollView,
-    KeyboardAvoidingView,
-    Platform,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useDispatch } from 'react-redux';
+import BackButton from '../../components/back-button';
 import ProgressIndicator from '../../components/progress-indicator';
+import { useAppNavigation } from '../../hooks/useAppNavigation';
+import { setAppAlert } from '../../redux/slices/appAlertSlice';
 
 export default function InterestsScreen() {
+    const dispatch = useDispatch()
+    
+    const { goBack } = useAppNavigation()
+    
     const router = useRouter();
+
+    const params = useLocalSearchParams()
+
     const [selectedInterests, setSelectedInterests] = useState([]);
     const [otherInterestsText, setOtherInterestsText] = useState('');
     const [showOtherInput, setShowOtherInput] = useState(false);
+
+    useEffect(() => {
+        if(!params?.email || !params?.hasHealthConditions || !params?.hasAllergies){
+            goBack()
+        }
+    }, [])
+
+    if(!params?.email || !params?.hasHealthConditions || !params?.hasAllergies) return <></>
 
     const interests = [
         { id: 'beach-party', label: 'Beach party', emoji: '🏖️' },
@@ -57,15 +76,58 @@ export default function InterestsScreen() {
         setOtherInterestsText('');
     };
 
+    const canNext = () => {
+        if(selectedInterests.length <= 0) return false;
+
+        if(selectedInterests.includes('others') && !otherInterestsText) return false
+
+        return true;
+    }
+
     const handleNext = () => {
-        if (selectedInterests.length > 0) {
-            router.push('/onboarding/add-photos');
+        if (!canNext()) {
+            dispatch(setAppAlert({ msg: 'All fields are required', type: 'info' }))
+            return
         }
+
+        let interests = [selectedInterests]
+
+        if(interests.includes('others')){
+            
+            if(!otherInterestsText){
+                dispatch(setAppAlert({ msg: 'All fields are required', type: 'info' }))                
+                return;
+            }
+
+            interests.map(i => {
+                if(i === 'others'){
+                    return otherInterestsText
+                }
+
+                return i
+            })
+        }
+
+        router.push({
+            pathname: '/onboarding/add-photos',
+            params: {
+                ...params, 
+                interests
+            }
+        });
     };
+
+    const isFormComplete = canNext()
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
             <StatusBar barStyle="dark-content" />
+
+            <View style={{ paddingHorizontal: 24, marginBottom: 15 }}>
+                <BackButton
+                    onPress={goBack}
+                />
+            </View>            
             
             <KeyboardAvoidingView 
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -160,10 +222,10 @@ export default function InterestsScreen() {
                     <TouchableOpacity
                         style={[
                             styles.nextButton,
-                            selectedInterests.length === 0 && styles.nextButtonDisabled
+                            !isFormComplete && styles.nextButtonDisabled
                         ]}
                         onPress={handleNext}
-                        disabled={selectedInterests.length === 0}
+                        disabled={!isFormComplete}
                     >
                         <Text style={styles.nextButtonText}>Next</Text>
                     </TouchableOpacity>

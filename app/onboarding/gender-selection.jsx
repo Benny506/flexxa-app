@@ -1,29 +1,57 @@
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-    View,
+    StatusBar,
+    StyleSheet,
     Text,
     TouchableOpacity,
-    StyleSheet,
-    StatusBar,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import BackButton from '../../components/back-button';
 import ProgressIndicator from '../../components/progress-indicator';
+import { useAppNavigation } from '../../hooks/useAppNavigation';
 
 export default function GenderSelectionScreen() {
+
+    const { goBack } = useAppNavigation()
+
     const router = useRouter();
+
+    const params = useLocalSearchParams()
+
     const [selectedGender, setSelectedGender] = useState('');
+
+    useEffect(() => {
+        if(!params?.email){
+            goBack()
+        }
+    }, [])
+
+    if(!params?.email) return <></>
 
     const handleNext = () => {
         if (selectedGender) {
-            router.push('/onboarding/lifestyle-preferences');
+            router.push({
+                pathname: '/onboarding/lifestyle-preferences',
+                params: {
+                    ...params,
+                    gender: selectedGender
+                }
+            });
         }
     };
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
             <StatusBar barStyle="dark-content" />
+
+            <View style={{ paddingHorizontal: 24 }}>
+                <BackButton 
+                    onPress={goBack}
+                />
+            </View>
             
             <View style={styles.content}>
                 {/* Title */}

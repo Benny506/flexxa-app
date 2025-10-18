@@ -22,24 +22,24 @@ export const AppNavigationProvider = ({ children }) => {
   }, [pathname, segments]);
 
   // ✅ simplified navigation helpers
-  const appNavigateTo = (path, params) => {
+  const appNavigateTo = ({ path, params }) => {
     if (params) router.push({ pathname: path, params });
     else router.push(path);
   };
 
-  const replace = (path, params) => {
+  const replace = ({ path, params }) => {
     if (params) router.replace({ pathname: path, params });
     else router.replace(path);
   };
 
   const goBack = () => router.back();
 
-  const fullNavigateTo = (path, params) => {
+  const fullNavigateTo = ({ path, params }) => {
     // hard reset — can simulate CommonActions.reset()
     router.replace({ pathname: path, params });
   };
 
-  const fullTabNavigateTo = (tab, screen, params) => {
+  const fullTabNavigateTo = ({ tab, screen, params }) => {
     const path = `/${tab}/${screen}`;
     if (params) router.push({ pathname: path, params });
     else router.push(path);

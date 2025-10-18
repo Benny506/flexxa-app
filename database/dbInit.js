@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
+import { DateTime } from 'luxon';
 import 'react-native-url-polyfill/auto';
-import { getPublicUrl } from '../utils/apiRequests/requestApi';
 import { getNotificationToken } from '../utils/notifications/useNotificationHandler';
+import { convertToTimezone, timezones } from '../utils/utils';
 
 
 const SUPABASE_URL = 'https://nknoqpcyjcxpoirzizgz.supabase.co'
@@ -29,7 +30,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 const updateNotificationToken = async ({ userId, usertype }) => {
   console.log("Updating token")
 
-  const tableName = usertype === 'flex' ? 'flex_profiles' : 'flexr_profiles'
+  const tableName = 'user_profiles'
 
   const { notification_token } = await getNotificationToken()
 
@@ -42,7 +43,7 @@ const updateNotificationToken = async ({ userId, usertype }) => {
       .single()
 
     if (notificationTokenUpdateError) {
-      console.log(error)
+      console.log(notificationTokenUpdateError)
     }
   }
 
@@ -51,7 +52,7 @@ const updateNotificationToken = async ({ userId, usertype }) => {
 
 
 export async function createOrUpdateOtp({ email }) {
-  
+
   // 1. Generate 6-digit OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -62,6 +63,10 @@ export async function createOrUpdateOtp({ email }) {
       {
         email,
         code: otp,
+        expires_at: convertToTimezone({
+          isoString: DateTime.now().setZone(timezones.UTC).plus({ minutes: 10 }).toISO(),
+          targetZone: timezones.UTC
+        })
       },
       { onConflict: ['email'] }
     );
@@ -84,7 +89,7 @@ export async function logout() {
 
 export async function login({ email, password, usertype }) {
 
-  const tableName = usertype === 'flex' ? 'flex_profiles' : 'flexr_profiles'
+  const tableName = 'user_profiles'
 
   // Step 1: Authenticate
   const { data: authData, error: loginError } = await supabase.auth.signInWithPassword({
@@ -97,9 +102,10 @@ export async function login({ email, password, usertype }) {
     return { error: loginError };
   }
 
+  console.log(tableName)
   const userId = authData.user.id;
 
-  await updateNotificationToken({ userId })
+  await updateNotificationToken({ userId, usertype })
 
   // Step 2: Fetch user profile using id
   const { data: profile, error: profileError } = await supabase
@@ -113,11 +119,10 @@ export async function login({ email, password, usertype }) {
     return { error: { message: 'Invalid credentials' } };
   }
 
-  const { publicUrl } = await getPublicUrl({ filePath: profile?.profile_img, bucket_name: 'user_profiles' })
+  const _profile = { ...profile }
 
-  const _profile = {
-    ...profile,
-    profile_img: publicUrl
+  if (_profile?.profile_imgs) {
+    //handle getting public signed urls here
   }
 
   const { data: userData, error: userDataError } = await fetchUserData({ id: userId })
@@ -136,7 +141,10 @@ export async function login({ email, password, usertype }) {
   };
 }
 
-export async function automaticLogin() {
+export async function automaticLogin({ usertype }) {
+
+  const profileTableName = 'user_profiles'
+
   try {
     // 1. Get session from SecureStore
     const {
@@ -152,11 +160,11 @@ export async function automaticLogin() {
     const user = session.user;
     const userId = user.id;
 
-    await updateNotificationToken({ userId })
+    await updateNotificationToken({ userId, usertype })
 
     // 2. Fetch profile
     const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
+      .from(profileTableName)
       .select('*')
       .eq('id', userId)
       .single();
@@ -172,11 +180,10 @@ export async function automaticLogin() {
       throw new Error()
     }
 
-    const { publicUrl } = await getPublicUrl({ filePath: profile?.profile_img, bucket_name: 'user_profiles' })
+    const _profile = { ...profile }
 
-    const _profile = {
-      ...profile,
-      profile_img: publicUrl
+    if (_profile?.profile_imgs) {
+      //handle getting public signed urls here
     }
 
     return {
@@ -193,9 +200,60 @@ export async function automaticLogin() {
 }
 
 const fetchUserData = async ({ id }) => {
+
+  const { phoneData, phoneError } = await supabase
+    .from('unique_phones')
+    .select("*")
+    .eq("id", id)
+    .single()
+
+  if(phoneError){
+    console.log('phoneError', phoneError)
+    throw new Error()
+  }
+
   return {
-    data: { },
+    data: {
+      phoneData
+    },
     error: null
+  }
+}
+
+export const phoneNumberInUse = async ({ country_code, phone_number }) => {
+  try {
+
+    const { data, error } = await supabase
+      .from("unique_phones")
+      .select("*")
+      .eq('country_code', country_code)
+      .eq('phone_number', phone_number)
+
+    if(error){
+      console.log(error)
+      throw new Error()
+    }
+
+    if(data?.length === 0){
+      return {
+        exists: false,
+        error: null
+      }
+    }
+
+    return {
+      exists: true,
+      error: null
+    }
+
+    
+  } catch (error) {
+    console.log(error)
+
+    return {
+      exists: null,
+      error
+    }
   }
 }
 

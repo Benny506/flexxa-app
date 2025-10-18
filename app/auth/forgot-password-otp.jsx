@@ -1,28 +1,87 @@
-import React, { useState, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-    View,
+    StatusBar,
+    StyleSheet,
     Text,
     TouchableOpacity,
-    StyleSheet,
-    StatusBar,
-    Alert
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import NumericKeyboard from '../../components/keyboard';
+import { useDispatch } from 'react-redux';
 import BackButton from '../../components/back-button';
+import NumericKeyboard from '../../components/keyboard';
+import { createOrUpdateOtp } from '../../database/dbInit';
+import { useAppNavigation } from '../../hooks/useAppNavigation';
+import { setAppAlert } from '../../redux/slices/appAlertSlice';
+import { appLoadStart, appLoadStop } from '../../redux/slices/appLoadingSlice';
+import { onRequestApi } from '../../utils/apiRequests/requestApi';
 
 export default function ForgotPasswordOtpScreen() {
+    const dispatch = useDispatch()
+
+    const { goBack } = useAppNavigation()
+
     const router = useRouter();
     const params = useLocalSearchParams();
+
     const { identifier, method } = params;
 
     const [otp, setOtp] = useState(['', '', '', '', '', '']);
     const [otpError, setOtpError] = useState('');
-    const [timer, setTimer] = useState(90); // 01:30
-    const [canResend, setCanResend] = useState(false);
+    const [timer, setTimer] = useState(null); // 01:30
+    const [canResend, setCanResend] = useState(true);
     const [showResendSuccess, setShowResendSuccess] = useState(false);
+    const [apiReqs, setApiReqs] = useState({ isLoading: false, errorMsg: null, data: null })
+
+    useEffect(() => {
+        if (!identifier || !method) {
+            goBack()
+            return;
+        }
+
+        if (method === 'email') {
+            setApiReqs({
+                isLoading: true,
+                errorMsg: null,
+                data: {
+                    type: 'createOtp'
+                }
+            })
+        }
+    }, [])
+
+    useEffect(() => {
+        const { isLoading, data } = apiReqs
+
+        if (isLoading) dispatch(appLoadStart());
+        else dispatch(appLoadStop());
+
+        if (isLoading && data) {
+            const { type, requestInfo } = data
+
+            if (type === 'createOtp') {
+                createOtp()
+            }
+
+            if (type === 'sendCodeToMail') {
+                onRequestApi({
+                    requestInfo,
+                    successCallBack: sendCodeToMailSuccess,
+                    failureCallback: apiReqError
+                })
+            }
+
+            if (type == 'validateCode') {
+                onRequestApi({
+                    requestInfo,
+                    successCallBack: validateCodeSuccess,
+                    failureCallback: apiReqError
+                })
+            }
+        }
+    }, [apiReqs])
 
     // Timer countdown
     useEffect(() => {
@@ -39,6 +98,107 @@ export default function ForgotPasswordOtpScreen() {
             return () => clearInterval(interval);
         }
     }, [timer]);
+
+    const validateCodeSuccess = async () => {
+
+        try {
+
+            setApiReqs({ isLoading: false, errorMsg: null, data: null })
+
+            router.push({
+                pathname: '/auth/new-password',
+                params: {
+                    email: identifier
+                }
+            });
+
+            dispatch(setAppAlert({ msg: 'Code validated!', type: 'success' }))
+
+            return;
+
+        } catch (error) {
+            const errorMsg = 'Invalid OTP! Please re-enter correctly'
+            setOtpError(errorMsg);
+            return apiReqError({ errorMsg })
+        }
+    };
+
+    const sendCodeToMailSuccess = async ({ }) => {
+        try {
+
+            handleResendOtp()
+            setApiReqs({ isLoading: false, errorMsg: null, data: null })
+
+            dispatch(setAppAlert({ msg: 'Code sent!', type: 'success' }))
+
+            return;
+
+        } catch (error) {
+            console.log(error)
+            return apiReqError({ errorMsg: 'Something went wrong! Try again.' })
+        }
+    }
+
+    const createOtp = async () => {
+        try {
+
+            //right now, this will ONLY work with email addresses
+
+            const email = identifier
+
+            const { error, token } = await createOrUpdateOtp({ email })
+
+            if (error || !token) {
+                console.log(error)
+                throw new Error()
+            }
+
+            const code = token
+
+            return setApiReqs({
+                isLoading: true,
+                errorMsg: null,
+                data: {
+                    type: 'sendCodeToMail',
+                    requestInfo: {
+                        url: 'https://nknoqpcyjcxpoirzizgz.supabase.co/functions/v1/send-email-via-mailsender',
+                        method: 'POST',
+                        data: {
+                            to_email: email,
+                            data: {
+                                code
+                            },
+                            template_id: '3zxk54vy3kq4jy6v',
+                            subject: "Email verification"
+                        }
+                    }
+                }
+            })
+
+        } catch (error) {
+            console.log(error)
+            return apiReqError({ errorMsg: 'Something went wrong! Try again.' })
+        }
+    }
+
+    const apiReqError = ({ errorMsg }) => {
+        setApiReqs({ isLoading: false, errorMsg, data: null })
+        dispatch(setAppAlert({ msg: errorMsg, type: 'error' }))
+
+        return
+    }
+
+    const initiateCreateOtp = () => {
+        setApiReqs({
+            isLoading: true,
+            errorMsg: null,
+            data: {
+                type: 'createOtp'
+            }
+        })
+    }
+
+    if (!identifier || !method) return <></>
 
     // Format timer display
     const formatTimer = (seconds) => {
@@ -81,10 +241,25 @@ export default function ForgotPasswordOtpScreen() {
         if (otpCode.length !== 6) return;
 
         try {
-            router.push('/auth/new-password');
-            // setOtpError('Invalid OTP! Please re-enter correctly');
+            setApiReqs({
+                isLoading: true,
+                errorMsg: null,
+                data: {
+                    type: 'validateCode',
+                    requestInfo: {
+                        url: 'https://nknoqpcyjcxpoirzizgz.supabase.co/functions/v1/verify-code',
+                        method: 'POST',
+                        data: {
+                            code: otpCode,
+                            email: identifier
+                        }
+                    }
+                }
+            })
+
         } catch (error) {
-            setOtpError('Invalid OTP! Please re-enter correctly');
+            dispatch(setAppAlert({ msg: 'Invalid verification code. Please try again.', type: 'error' }))
+            return;
         }
     };
 
@@ -92,21 +267,17 @@ export default function ForgotPasswordOtpScreen() {
     const handleResendOtp = async () => {
         if (!canResend) return;
 
-        try {
-            // TODO: Make API call to resend OTP
-            setTimer(90);
-            setCanResend(false);
-            setShowResendSuccess(true);
-            setOtp(['', '', '', '', '', '']);
-            setOtpError('');
+        // TODO: Make API call to resend OTP
+        setTimer(90);
+        setCanResend(false);
+        setShowResendSuccess(true);
+        setOtp(['', '', '', '', '', '']);
+        setOtpError('');
 
-            // Hide success message after 3 seconds
-            setTimeout(() => {
-                setShowResendSuccess(false);
-            }, 3000);
-        } catch (error) {
-            Alert.alert('Error', 'Failed to resend code. Please try again.');
-        }
+        // Hide success message after 3 seconds
+        setTimeout(() => {
+            setShowResendSuccess(false);
+        }, 3000);
     };
 
     const isOtpComplete = otp.every(digit => digit !== '');
@@ -116,7 +287,7 @@ export default function ForgotPasswordOtpScreen() {
             <StatusBar barStyle="dark-content" />
 
             {/* Back Button */}
-            <View style={{ marginBottom: 40 }}>
+            <View style={{ marginBottom: 40, paddingHorizontal: 24 }}>
                 <BackButton onPress={() => router.back()} />
             </View>
 
@@ -161,11 +332,15 @@ export default function ForgotPasswordOtpScreen() {
                 {/* Timer and Resend */}
                 <View style={styles.timerContainer}>
                     <Text style={styles.timerText}>{formatTimer(timer)}</Text>
-                    <TouchableOpacity onPress={handleResendOtp} disabled={!canResend}>
-                        <Text style={[styles.resendText, canResend && styles.resendTextActive]}>
-                            Send again
-                        </Text>
-                    </TouchableOpacity>
+                    {
+                        canResend
+                        &&
+                        <TouchableOpacity onPress={createOtp} disabled={!canResend}>
+                            <Text style={[styles.resendText, canResend && styles.resendTextActive]}>
+                                Send again
+                            </Text>
+                        </TouchableOpacity>
+                    }
                 </View>
 
                 {/* Success Message */}
@@ -184,7 +359,7 @@ export default function ForgotPasswordOtpScreen() {
                 <View style={{ marginBottom: 30 }}>
                     <NumericKeyboard onPress={handleOtpPress} onDelete={handleOtpDelete} />
                 </View>
-                
+
             </View>
         </SafeAreaView>
     );
@@ -254,7 +429,7 @@ const styles = StyleSheet.create({
     successMessage: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between' ,
+        justifyContent: 'space-between',
         backgroundColor: 'rgba(49, 159, 67, 0.05)',
         paddingVertical: 12,
         paddingHorizontal: 16,

@@ -16,6 +16,7 @@ export default function Index() {
         // router.replace('/(main)/(tabs)/home');
       } else {
         router.replace('/splash');
+        // router.replace('/(main)/(tabs)/home');
       }
     };
     checkOnboarding();

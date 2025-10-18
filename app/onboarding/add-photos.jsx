@@ -1,25 +1,44 @@
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-    View,
+    ActivityIndicator,
+    Image,
+    StatusBar,
+    StyleSheet,
     Text,
     TouchableOpacity,
-    StyleSheet,
-    StatusBar,
-    Image,
-    Alert,
-    ActivityIndicator,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
+import { useDispatch } from 'react-redux';
+import Loader from '../../assets/images/loader.svg';
+import BackButton from '../../components/back-button';
 import ProgressIndicator from '../../components/progress-indicator';
-import Loader from '../../assets/images/loader.svg'
+import { useAppNavigation } from '../../hooks/useAppNavigation';
+import { setAppAlert } from '../../redux/slices/appAlertSlice';
+
 
 export default function AddPhotos() {
+    const dispatch = useDispatch()
+
+    const { goBack } = useAppNavigation()
+
     const router = useRouter();
+
+    const params = useLocalSearchParams()
+
     const [photos, setPhotos] = useState([null, null, null, null, null]);
     const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        if (!params?.email || !params?.interests) {
+            goBack()
+        }
+    }, [])
+
+    if (!params?.email || !params?.interests) return <></>
 
     const pickImage = async (index) => {
         try {
@@ -36,7 +55,7 @@ export default function AddPhotos() {
                 setPhotos(newPhotos);
             }
         } catch (error) {
-            Alert.alert('Error', 'Failed to pick image');
+            dispatch(setAppAlert({ msg: 'Failed to pick image', type: 'error' }))
         }
     };
 
@@ -50,22 +69,18 @@ export default function AddPhotos() {
         const hasAtLeastOnePhoto = photos.some(photo => photo !== null);
 
         if (!hasAtLeastOnePhoto) {
-            return;
+            return dispatch(setAppAlert({ msg: 'Upload at least one photo', type: 'info' }))
         }
 
-        setLoading(true);
+        const filteredPhotos = photos?.filter(Boolean)
 
-        try {
-            // Simulate upload
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            // Navigate to main app or dashboard
-            router.push('/verification');
-        } catch (error) {
-            Alert.alert('Error', 'Failed to upload photos');
-        } finally {
-            setLoading(false);
-        }
+        router.push({
+            pathname: '/verification',
+            params: {
+                ...params,
+                photos: filteredPhotos
+            }
+        });
     };
 
     const hasAtLeastOnePhoto = photos.some(photo => photo !== null);
@@ -73,6 +88,12 @@ export default function AddPhotos() {
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
             <StatusBar barStyle="dark-content" />
+
+            <View style={{ paddingHorizontal: 24, marginBottom: 15 }}>
+                <BackButton
+                    onPress={goBack}
+                />
+            </View>
 
             <View style={styles.content}>
                 {/* Title */}

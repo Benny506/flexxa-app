@@ -1,202 +1,256 @@
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { ErrorMessage, Field, Formik } from 'formik';
+import { useEffect, useState } from 'react';
 import {
-    View,
+    KeyboardAvoidingView,
+    Modal,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    StyleSheet,
-    StatusBar,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    Modal
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useDispatch } from 'react-redux';
+import * as yup from 'yup';
 import BackButton from '../../components/back-button';
+import ErrorMsg1 from '../../components/ErrorMsg1';
+import { useAppNavigation } from '../../hooks/useAppNavigation';
+import { setAppAlert } from '../../redux/slices/appAlertSlice';
+import { appLoadStart, appLoadStop } from '../../redux/slices/appLoadingSlice';
+import { onRequestApi } from '../../utils/apiRequests/requestApi';
+import { passwordSchema } from '../../utils/yupSchemas/yupSchemas';
+
+
 
 export default function SetNewPasswordScreen() {
+    const dispatch = useDispatch()
+
+    const { goBack, fullNavigateTo } = useAppNavigation()
+
     const router = useRouter();
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
+    const params = useLocalSearchParams()
+
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [passwordError, setPasswordError] = useState('');
-    const [confirmError, setConfirmError] = useState('');
     const [showSuccessModal, setShowSuccessModal] = useState(false);
+    const [apiReqs, setApiReqs] = useState({ isLoading: false, errorMsg: null, data: null })
 
-    // Validate password
-    const validatePassword = (text) => {
-        setPassword(text);
-        setPasswordError('');
-
-        if (text && text.length < 8) {
-            setPasswordError('Create a password with at least 8 characters');
+    useEffect(() => {
+        if (!params?.email) {
+            goBack()
         }
-    };
+    }, [])
 
-    // Validate confirm password
-    const validateConfirmPassword = (text) => {
-        setConfirmPassword(text);
-        setConfirmError('');
+    useEffect(() => {
+        const { isLoading, data } = apiReqs
 
-        if (text && text !== password) {
-            setConfirmError('Passwords do not match');
+        if (isLoading) dispatch(appLoadStart());
+        else dispatch(appLoadStop());
+
+        if (isLoading && data) {
+            const { type, requestInfo } = data
+
+            if (type === 'resetPassword') {
+                onRequestApi({
+                    requestInfo,
+                    successCallBack: resetPasswordSuccess,
+                    failureCallback: resetPasswordFailure
+                })
+            }
         }
-    };
+    }, [apiReqs])
 
-    // Handle reset password
-    const handleResetPassword = async () => {
-        let hasError = false;
-
-        // Reset errors
-        setPasswordError('');
-        setConfirmError('');
-
-        // Validate password
-        if (!password) {
-            setPasswordError('Create a password with at least 8 characters');
-            hasError = true;
-        } else if (password.length < 8) {
-            setPasswordError('Create a password with at least 8 characters');
-            hasError = true;
-        }
-
-        // Validate confirm password
-        if (!confirmPassword) {
-            setConfirmError('Please confirm your password');
-            hasError = true;
-        } else if (password !== confirmPassword) {
-            setConfirmError('Passwords do not match');
-            hasError = true;
-        }
-
-        if (hasError) return;
-
+    const resetPasswordSuccess = ({ }) => {
         try {
-            setShowSuccessModal(true);
+
+            setApiReqs({ isLoading: false, errorMsg: null, data: null })
+
+            setShowSuccessModal(true)
+
+            dispatch(setAppAlert({ msg: 'Password reset successful', type: 'success' }))
+
+            return;
+
         } catch (error) {
-            // Handle error
-            console.error('Password reset error:', error);
+            console.log(error)
+            return resetPasswordFailure({ errorMsg: "Something went wrong! Try again." })
         }
-    };
+    }
+    const resetPasswordFailure = ({ errorMsg }) => {
+        setApiReqs({ isLoading: false, errorMsg, data: null })
+        dispatch(setAppAlert({ msg: errorMsg, type: 'error' }))
+
+        return;
+    }
+
+    if (!params?.email) return <></>
 
     // Handle sign in from modal
     const handleSignIn = () => {
         setShowSuccessModal(false);
-        router.push('/auth/signin');
+        fullNavigateTo({
+            path: '/auth/signin'
+        })
     };
-
-    // Check if form is valid
-    const isFormValid = password.length >= 8 && confirmPassword.length >= 8 && password === confirmPassword;
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
             <StatusBar barStyle="dark-content" />
-            <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                style={styles.flex}
+            <Formik
+                validationSchema={yup.object().shape({
+                    password: passwordSchema,
+                    confirmPassword: yup.string()
+                        .oneOf([yup.ref("password"), null], "Passwords must match")
+                        .required("Please confirm your password"),
+                })}
+                initialValues={{
+                    password: '', confirmPassword: ''
+                }}
+                onSubmit={values => {
+                    setApiReqs({
+                        isLoading: true,
+                        errorMsg: null,
+                        data: {
+                            type: 'resetPassword',
+                            requestInfo: {
+                                url: 'https://nknoqpcyjcxpoirzizgz.supabase.co/functions/v1/reset-password',
+                                method: 'POST',
+                                data: {
+                                    email: params?.email,
+                                    new_password: values?.password
+                                }
+                            }
+                        }
+                    })
+                }}
             >
-                {/* Back Button */}
-                <View style={{ marginBottom: 100 }}>
-                    <BackButton onPress={() => router.back()} />
-                </View>
-
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
-                    keyboardShouldPersistTaps="handled"
-                    showsVerticalScrollIndicator={false}
-                >
-                    {/* Title */}
-                    <Text style={styles.title}>Set New Password</Text>
-                    <Text style={styles.subtitle}>Must be at least 8 characters</Text>
-
-                    {/* Password Input */}
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Enter your password</Text>
-                        <View style={styles.passwordContainer}>
-                            <TextInput
-                                style={[
-                                    styles.input,
-                                    passwordError && styles.inputError,
-                                    styles.passwordInput
-                                ]}
-                                value={password}
-                                onChangeText={validatePassword}
-                                placeholder="••••••••"
-                                placeholderTextColor="#CCCCCC"
-                                secureTextEntry={!showPassword}
-                                autoCapitalize="none"
-                            />
-                            <TouchableOpacity
-                                style={styles.eyeIcon}
-                                onPress={() => setShowPassword(!showPassword)}
-                            >
-                                <Ionicons
-                                    name={showPassword ? 'eye-outline' : 'eye-off-outline'}
-                                    size={20}
-                                    color="#666"
-                                />
-                            </TouchableOpacity>
-                        </View>
-                        {passwordError ? (
-                            <Text style={styles.errorText}>{passwordError}</Text>
-                        ) : null}
-                    </View>
-
-                    {/* Confirm Password Input */}
-                    <View style={styles.inputContainer}>
-                        <Text style={styles.label}>Confirm your password</Text>
-                        <View style={styles.passwordContainer}>
-                            <TextInput
-                                style={[
-                                    styles.input,
-                                    confirmError && styles.inputError,
-                                    styles.passwordInput
-                                ]}
-                                value={confirmPassword}
-                                onChangeText={validateConfirmPassword}
-                                placeholder="••••••••"
-                                placeholderTextColor="#CCCCCC"
-                                secureTextEntry={!showConfirmPassword}
-                                autoCapitalize="none"
-                            />
-                            <TouchableOpacity
-                                style={styles.eyeIcon}
-                                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                            >
-                                <Ionicons
-                                    name={showConfirmPassword ? 'eye-outline' : 'eye-off-outline'}
-                                    size={20}
-                                    color="#666"
-                                />
-                            </TouchableOpacity>
-                        </View>
-                        {confirmError ? (
-                            <Text style={styles.errorText}>{confirmError}</Text>
-                        ) : null}
-                    </View>
-
-                    <View style={styles.spacer} />
-
-                    {/* Reset Button */}
-                    <TouchableOpacity
-                        style={[styles.resetButton, !isFormValid && styles.resetButtonDisabled]}
-                        onPress={handleResetPassword}
-                        disabled={!isFormValid}
+                {({ isValid, handleBlur, handleSubmit, handleChange, values, dirty }) => (
+                    <KeyboardAvoidingView
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                        style={styles.flex}
                     >
-                        <Text style={styles.resetButtonText}>Reset Password</Text>
-                    </TouchableOpacity>
-                </ScrollView>
-            </KeyboardAvoidingView>
+                        {/* Back Button */}
+                        <View style={{ marginBottom: 100, paddingHorizontal: 24 }}>
+                            <BackButton onPress={() => router.back()} />
+                        </View>
+
+                        <ScrollView
+                            contentContainerStyle={styles.scrollContent}
+                            keyboardShouldPersistTaps="handled"
+                            showsVerticalScrollIndicator={false}
+                        >
+                            {/* Title */}
+                            <Text style={styles.title}>Set New Password</Text>
+                            <Text style={styles.subtitle}>Must be at least 8 characters, have at least 1 lowercase letter, 1 uppercase letter, 1 number and 1 symbol</Text>
+
+                            {/* Password Input */}
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.label}>Enter your password</Text>
+                                <View style={styles.passwordContainer}>
+                                    <Field name="password">
+                                        {({
+                                            field,
+                                            meta: { touched, error }
+                                        }) =>
+                                            <TextInput
+                                                style={[
+                                                    styles.input,
+                                                    (touched && error) && styles.inputError,
+                                                    styles.passwordInput
+                                                ]}
+                                                placeholder="••••••••"
+                                                placeholderTextColor="#CCCCCC"
+                                                secureTextEntry={!showPassword}
+                                                autoCapitalize="none"
+                                                value={values.password}
+                                                onChangeText={handleChange('password')}
+                                                onBlur={handleBlur("password")}
+                                            />
+                                        }
+                                    </Field>
+                                    <TouchableOpacity
+                                        style={styles.eyeIcon}
+                                        onPress={() => setShowPassword(!showPassword)}
+                                    >
+                                        <Ionicons
+                                            name={showPassword ? 'eye-outline' : 'eye-off-outline'}
+                                            size={20}
+                                            color="#666"
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+                                <ErrorMessage name='password'>
+                                    {errorMsg => <ErrorMsg1 errorMsg={errorMsg} />}
+                                </ErrorMessage>
+                            </View>
+
+                            {/* Confirm Password Input */}
+                            <View style={styles.inputContainer}>
+                                <Text style={styles.label}>Confirm your password</Text>
+                                <View style={styles.passwordContainer}>
+                                    <Field name="confirmPassword">
+                                        {({
+                                            field,
+                                            meta: { touched, error }
+                                        }) =>
+                                            <TextInput
+                                                style={[
+                                                    styles.input,
+                                                    (touched && error) && styles.inputError,
+                                                    styles.passwordInput
+                                                ]}
+                                                placeholder="••••••••"
+                                                placeholderTextColor="#CCCCCC"
+                                                secureTextEntry={!showConfirmPassword}
+                                                autoCapitalize="none"
+                                                value={values.confirmPassword}
+                                                onChangeText={handleChange('confirmPassword')}
+                                                onBlur={handleBlur("confirmPassword")}
+                                            />
+                                        }
+                                    </Field>
+                                    <TouchableOpacity
+                                        style={styles.eyeIcon}
+                                        onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+                                    >
+                                        <Ionicons
+                                            name={showConfirmPassword ? 'eye-outline' : 'eye-off-outline'}
+                                            size={20}
+                                            color="#666"
+                                        />
+                                    </TouchableOpacity>
+                                </View>
+                                <ErrorMessage name='confirmPassword'>
+                                    {errorMsg => <ErrorMsg1 errorMsg={errorMsg} />}
+                                </ErrorMessage>
+                            </View>
+
+                            <View style={styles.spacer} />
+
+                            {/* Reset Button */}
+                            <TouchableOpacity
+                                style={[styles.resetButton, !(isValid && dirty) && styles.resetButtonDisabled]}
+                                onPress={handleSubmit}
+                                disabled={!(isValid && dirty)}
+                            >
+                                <Text style={styles.resetButtonText}>Reset Password</Text>
+                            </TouchableOpacity>
+                        </ScrollView>
+                    </KeyboardAvoidingView>
+                )}
+            </Formik>
 
             {/* Success Modal */}
             <Modal
                 visible={showSuccessModal}
                 transparent={true}
                 animationType="fade"
-                onRequestClose={() => setShowSuccessModal(false)}
+                onRequestClose={handleSignIn}
             >
                 <View style={styles.modalOverlay}>
                     <View style={styles.modalContent}>

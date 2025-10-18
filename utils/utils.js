@@ -1,4 +1,4 @@
-import { DateTime } from 'luxon';
+import { DateTime, IANAZone } from 'luxon';
 
 /**
  * Validate a date built from numeric year, month, and day.
@@ -44,4 +44,67 @@ export function validateDate({ year, month, day, options = {} }) {
   }
 
   return { valid: true };
+}
+
+
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+/**
+ * Converts an ISO datetime string to another timezone, returning ISO format.
+ *
+ * @param isoString - The original ISO datetime string (e.g. 2025-10-17T06:00:00Z)
+ * @param targetZone - The IANA timezone name (e.g. "Africa/Lagos", "America/New_York")
+ * @returns ISO datetime string converted to the target timezone
+ */
+export function convertToTimezone({ isoString, targetZone }) {
+  const dt = DateTime.fromISO(isoString, { zone: "utc" }); // interpret input as UTC
+  const converted = dt.setZone(targetZone);
+  return converted.toISO(); // return in ISO 8601 format
+}
+
+
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+export const timezones = {
+  "UTC": "UTC",
+  "Africa/Lagos": "Africa/Lagos",
+  "Africa/Cairo": "Africa/Cairo",
+  "America/New_York": "America/New_York",
+  "Asia/Tokyo": "Asia/Tokyo",
+  "Europe/London": "Europe/London",
+  "Europe/Berlin": "Europe/Berlin",
+  "Asia/Dubai": "Asia/Dubai",
+  "Australia/Sydney": "Australia/Sydney",
+};
+
+
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+export function isValidTimezone({ zone }) {
+  return IANAZone.isValidZone(zone);
+}
+
+
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+export function isValidEmail({ email }) {
+  if (typeof email !== "string") return false;
+
+  // RFC 5322–compliant pattern (simplified for practical use)
+  const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  return pattern.test(email.trim());
 }
