@@ -9,7 +9,10 @@ const userDetailsSlice = createSlice({
         phoneData: {
             phone_number: null,
             country_code: null
-        }
+        },
+        flexrRequests: [],
+        myRequests: [],
+        myEvents: []
     },
     reducers: {
         setUserDetails: (state, action) => {
@@ -32,6 +35,24 @@ const userDetailsSlice = createSlice({
             if(action?.payload?.phoneData){
                 state.phoneData = action?.payload?.phoneData
             }
+
+            //flexrRequests
+            if(action?.payload?.flexrRequests){
+                const requests = action?.payload?.flexrRequests
+
+                if(requests){
+                    const fromMe = requests?.filter(r => r?.from === 'flex')
+                    const fromFlexr = requests?.filter(r => r?.from === 'flexr')               
+
+                    state.flexrRequests = fromFlexr
+                    state.myRequests = fromMe
+                }
+            }
+
+            //myEvents
+            if(action?.payload?.myEvents){
+                state.myEvents = action?.payload?.myEvents
+            }
         },
 
         clearUserDetails: (state, action) => {
@@ -42,6 +63,9 @@ const userDetailsSlice = createSlice({
                 phone_number: null,
                 country_code: null
             }
+            state.flexrRequests = []
+            state.myRequests = []
+            state.myEvents = []
         }
     }
 })

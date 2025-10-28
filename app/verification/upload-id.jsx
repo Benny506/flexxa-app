@@ -3,21 +3,23 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
-    Alert,
     Modal,
     ScrollView,
     StatusBar,
     StyleSheet,
     Text,
     TouchableOpacity,
-    View,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch } from 'react-redux';
 import SkipButton from '../../components/skip-button';
 import useApiReqs from '../../hooks/useApiReqs';
 import { useAppNavigation } from '../../hooks/useAppNavigation';
+import { setAppAlert } from '../../redux/slices/appAlertSlice';
 
 export default function UploadIDScreen() {
+    const dispatch = useDispatch()
 
     const { fullNavigateTo } = useAppNavigation()
 
@@ -28,8 +30,8 @@ export default function UploadIDScreen() {
     const { updateProfile } = useApiReqs()
 
     const [selectedIDType, setSelectedIDType] = useState('');
-    const [frontUploaded, setFrontUploaded] = useState(false);
-    const [backUploaded, setBackUploaded] = useState(false);
+    const [frontSide, setFrontSide] = useState(false);
+    const [backSide, setBackSide] = useState(false);
     const [showSkipModal, setShowSkipModal] = useState(false);
 
     const idTypes = [
@@ -47,19 +49,29 @@ export default function UploadIDScreen() {
 
             if (!result.canceled) {
                 if (side === 'front') {
-                    setFrontUploaded(true);
+                    setFrontSide(result.assets[0]?.uri);
                 } else {
-                    setBackUploaded(true);
+                    setBackSide(result.assets[0]?.uri);
                 }
             }
         } catch (error) {
-            Alert.alert('Error', 'Failed to pick document');
+            dispatch(setAppAlert({ msg: 'Failed to pick document', type: 'error' }))
+            return;
         }
     };
 
     const handleNext = () => {
-        if (selectedIDType && frontUploaded && backUploaded) {
-            router.push('/verification/selfie-verification');
+        if (selectedIDType && frontSide && backSide) {
+            router.push({
+                pathname: '/verification/selfie-verification',
+                params: {
+                    ...params,
+                    government_id: {
+                        type: selectedIDType,
+                        frontSide, backSide
+                    }
+                }
+            });
         }
     };
 
@@ -91,7 +103,7 @@ export default function UploadIDScreen() {
         // })
     };
 
-    const isFormComplete = selectedIDType && frontUploaded && backUploaded;
+    const isFormComplete = selectedIDType && frontSide && backSide;
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -154,7 +166,7 @@ export default function UploadIDScreen() {
                                     onPress={() => handlePickDocument('front')}
                                     activeOpacity={0.7}
                                 >
-                                    {frontUploaded ? (
+                                    {frontSide ? (
                                         <Ionicons name="checkmark-circle" size={32} color="#484ED4" />
                                     ) : (
                                         <Ionicons name="cloud-upload-outline" size={32} color="#999" />
@@ -181,7 +193,7 @@ export default function UploadIDScreen() {
                                     onPress={() => handlePickDocument('back')}
                                     activeOpacity={0.7}
                                 >
-                                    {backUploaded ? (
+                                    {backSide ? (
                                         <Ionicons name="checkmark-circle" size={32} color="#484ED4" />
                                     ) : (
                                         <Ionicons name="cloud-upload-outline" size={32} color="#999" />

@@ -1,38 +1,44 @@
-import React, { useEffect, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StatusBar,
   ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
   TouchableOpacity,
-  StyleSheet
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 
 // Import reusable components
-import EventDetailsHeader from '../../../components/event/EventDetailsHeader';
 import AttendanceTimer from '../../../components/event/AttendanceTimer';
 import EventDetailsContent from '../../../components/event/EventDetailsContent';
-import ActionButtons from '../../../components/event/ActionButtons';
+import EventDetailsHeader from '../../../components/event/EventDetailsHeader';
 
 // Import modals
+import { useLocalSearchParams } from 'expo-router/build/hooks';
+import { useSelector } from 'react-redux';
+import ActionButtons from '../../../components/event/ActionButtons';
+import Loading from '../../../components/loader';
+import AvailabilityUpdatedModal from '../../../components/modals/AvailabilityUpdatedModal';
+import ClockInConfirmationModal from '../../../components/modals/ClockInConfirmationModal';
+import ClockInSuccessModal from '../../../components/modals/ClockInSuccessModal';
 import ClockOutModal from '../../../components/modals/ClockOutModal';
 import ClockOutSuccessModal from '../../../components/modals/ClockOutSuccessModal';
-import UpdateAvailabilityModal from '../../../components/modals/UpdateAvailabilityModal';
-import AvailabilityUpdatedModal from '../../../components/modals/AvailabilityUpdatedModal';
-import ReviewModal from '../../../components/modals/ReviewModal';
-import Loading from '../../../components/loader';
 import ConfirmAcceptanceModal from '../../../components/modals/ConfirmAcceptanceModal';
-import RequestAcceptedModal from '../../../components/modals/RequestAcceptedModal';
 import DeclineRequestModal from '../../../components/modals/DeclineRequestModal';
 import RequestDeclinedModal from '../../../components/modals/RequestDeclinedModal';
-import ClockInSuccessModal from '../../../components/modals/ClockInSuccessModal';
-import ClockInConfirmationModal from '../../../components/modals/ClockInConfirmationModal';
+import ReviewModal from '../../../components/modals/ReviewModal';
+import UpdateAvailabilityModal from '../../../components/modals/UpdateAvailabilityModal';
+import useApiReqs from '../../../hooks/useApiReqs';
+import { getUserDetailsState } from '../../../redux/slices/userDetailsSlice';
 
-// Set the target duration for attendance (6 hours = 6 * 3600 seconds)
-const TARGET_DURATION_SECONDS = 6 * 3600;
+//status interpretation
+//null -> you can request to participate
+//pending -> awaiting your request approval
+//unavailable -> you've been invited but not accepted yet
+//available -> you're in. Either by accepting an invite are having your request approved
 
 // Format function (moved from AttendanceTimer.js)
 const formatTime = (seconds) => {
@@ -44,14 +50,24 @@ const formatTime = (seconds) => {
 
 export default function EventDetails() {
   const router = useRouter();
-  const { id } = useLocalSearchParams();
+  const params = useLocalSearchParams();
+
+  const event = typeof params?.event === 'string' ? JSON.parse(params?.event) : params?.event;
+
+  const { getEventAttendees, acceptEventRequest, rejectEventRequest, requestToParticipate } = useApiReqs()
+
+  const user = useSelector(state => getUserDetailsState(state).user)
+  const flexrRequests = useSelector(state => getUserDetailsState(state).flexrRequests)
+  const myRequests = useSelector(state => getUserDetailsState(state).myRequests)
 
   // State management
-  const [status, setStatus] = useState('unavailable');
-  const [isClockedIn, setIsClockedIn] = useState(false);
-  const [showDetails, setShowDetails] = useState(false);
-  const [remainingTime, setRemainingTime] = useState(TARGET_DURATION_SECONDS);
+  const [status, setStatus] = useState(null);
+  const [clockedInAt, setClockedInAt] = useState(null);
+  const [clockedOutAt, setClockedOutAt] = useState(null)
+  const [showDetails, setShowDetails] = useState(true);
+  const [remainingTime, setRemainingTime] = useState(event?.duration);
   const [startTime, setStartTime] = useState(null);
+  const [attendees, setAttendees] = useState([])
 
   // Modal states
   const [showClockOutModal, setShowClockOutModal] = useState(false);
@@ -61,68 +77,75 @@ export default function EventDetails() {
   const [showAvailabilityUpdatedModal, setShowAvailabilityUpdatedModal] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [showConfirmAcceptanceModal, setShowConfirmAcceptanceModal] = useState(false);
-  const [showRequestAcceptedModal, setShowRequestAcceptedModal] = useState(false);
+  // const [showRequestAcceptedModal, setShowRequestAcceptedModal] = useState(false);
   const [showDeclineRequestModal, setShowDeclineRequestModal] = useState(false);
   const [showRequestDeclinedModal, setShowRequestDeclinedModal] = useState(false);
   const [showClockInConfirmationModal, setShowClockInConfirmationModal] = useState(false); // NEW
   const [showClockInSuccessModal, setShowClockInSuccessModal] = useState(false);
 
-  // Event data
-  const event = {
-    image: 'https://via.placeholder.com/400x200',
-    ticketType: 'Regular ticket',
-    title: 'Bikini Pool Party',
-    price: '₦5,000',
-    reward: 'Reward',
-    date: 'Friday, October 20',
-    time: '12:00pm - 10:00pm',
-    location: 'Giwa gardens, Lagos',
-    host: {
-      name: 'John Doe',
-      rating: 4,
-      badge: 'Coolest host',
-      avatar: 'https://via.placeholder.com/40',
-      eventsHosted: 55,
-    },
-    activities: ['Music', 'Stripping', 'Social', 'Games', 'Networking'],
-    attendees: 25,
-    description: 'Dive into the ultimate poolside experience at our Bikini Pool Party! Enjoy refreshing cocktails, vibrant music, and soothing games as you mingle with fellow partygoers.',
-    instructions: [
-      'You are required to stay for a minimum of 6 hours.',
-      'Flex must clock in upon arrival and clock out before leaving.',
-      'Rewards are only available upon completion of the full attendance duration and verified clock-out.',
-    ],
-  };
-
   useEffect(() => {
-    let interval;
+    //load attendees
+    getEventAttendees({
+      callBack: ({ attendees }) => {
+        setAttendees(attendees)
 
-    if (isClockedIn && startTime === null) {
-      // Clocked in for the first time
-      setStartTime(Date.now());
-    }
+        const IAmAttending = attendees?.filter(att => att?.flex_id === user?.id)?.[0]
 
-    if (isClockedIn && startTime !== null) {
-      interval = setInterval(() => {
-        const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
-        let newRemainingTime = TARGET_DURATION_SECONDS - elapsedTime;
+        if (IAmAttending) {
+          const { clocked_in_at, clocked_out_at } = IAmAttending
 
-        if (newRemainingTime <= 0) {
-          newRemainingTime = 0;
-          clearInterval(interval);
+          setClockedInAt(clocked_in_at)
+          setClockedOutAt(clocked_out_at)
+
+          setStatus('available')
+
+        } else {
+          const inMyRequests = myRequests?.filter(r => r?.event_id === event?.id)?.[0]
+          const inFlexrRequests = flexrRequests?.filter(r => r?.event_id === event?.id)?.[0]
+
+          if (inMyRequests) {
+            setStatus('pending')
+
+          }
+
+          if (inFlexrRequests) {
+            setStatus('unavailable')
+          }
         }
-        setRemainingTime(newRemainingTime);
-      }, 1000);
-    }
+      },
+      event_id: event?.id
+    })
+  }, [myRequests, flexrRequests])
 
-    // Reset the timer if the user clocks out outside this flow
-    if (!isClockedIn) {
-      setRemainingTime(TARGET_DURATION_SECONDS);
-      setStartTime(null);
-    }
+  // useEffect(() => {
+  //   let interval;
 
-    return () => clearInterval(interval);
-  }, [isClockedIn, startTime]);
+  //   // if (clockedInAt && startTime === null) {
+  //   //   // Clocked in for the first time
+  //   //   setStartTime(Date.now());
+  //   // }
+
+  //   if (clockedInAt && startTime !== null) {
+  //     interval = setInterval(() => {
+  //       const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+  //       let newRemainingTime = event?.duration - elapsedTime;
+
+  //       if (newRemainingTime <= 0) {
+  //         newRemainingTime = 0;
+  //         clearInterval(interval);
+  //       }
+  //       setRemainingTime(newRemainingTime);
+  //     }, 1000);
+  //   }
+
+  //   // Reset the timer if the user clocks out outside this flow
+  //   // if (!clockedInAt) {
+  //   //   setRemainingTime(TARGET_DURATION_SECONDS);
+  //   //   setStartTime(null);
+  //   // }
+
+  //   return () => clearInterval(interval);
+  // }, [clockedInAt]);
 
   // Handler functions
   const handleClockIn = () => {
@@ -132,8 +155,8 @@ export default function EventDetails() {
     // Simulate API call delay
     setTimeout(() => {
       setShowLoadingModal(false);
-      // Setting isClockedIn=true triggers the useEffect timer logic immediately
-      setIsClockedIn(true);
+      // Setting clockedInAt=true triggers the useEffect timer logic immediately
+      setClockedInAt(true);
       setShowClockInSuccessModal(true);
     }, 1500);
   };
@@ -148,7 +171,7 @@ export default function EventDetails() {
     setShowLoadingModal(true);
     setTimeout(() => {
       setShowLoadingModal(false);
-      setIsClockedIn(false);
+      setClockedInAt(false);
       setShowClockOutSuccessModal(true);
     }, 2000);
   };
@@ -156,11 +179,14 @@ export default function EventDetails() {
   const handleUpdateAvailability = () => {
     setShowUpdateAvailabilityModal(false);
     setShowLoadingModal(true);
-    setTimeout(() => {
-      setShowLoadingModal(false);
-      setStatus('unavailable');
-      setShowAvailabilityUpdatedModal(true);
-    }, 2000);
+    rejectEventRequest({
+      event_id: event?.id,
+      callBack: ({ }) => {
+        setStatus(null);
+        setShowAvailabilityUpdatedModal(true);
+        setShowLoadingModal(false);
+      }
+    })
   };
 
   const handleRateReview = () => {
@@ -183,30 +209,44 @@ export default function EventDetails() {
     setShowConfirmAcceptanceModal(false);
     setShowLoadingModal(true);
 
-    setTimeout(() => {
-      setShowLoadingModal(false);
-      setStatus('available');
-      setShowRequestAcceptedModal(true);
-    }, 1500);
+    acceptEventRequest({
+      callBack: ({ attendee }) => {
+        setShowLoadingModal(false);
+        setStatus('available');
+        // setShowRequestAcceptedModal(true);
+      },
+      event_id: event?.id
+    })
   };
 
   const handleDeclineRequest = () => {
     setShowDeclineRequestModal(false);
     setShowLoadingModal(true);
 
-    setTimeout(() => {
-      setShowLoadingModal(false);
-      setShowRequestDeclinedModal(true);
-    }, 1500);
+    rejectEventRequest({
+      event_id: event?.id,
+      callBack: ({ }) => {
+        setShowRequestDeclinedModal(true);
+        setShowLoadingModal(false);
+      }
+    })
   };
 
   const handleViewDetailsAfterAccept = () => {
-    setShowRequestAcceptedModal(false);
+    // setShowRequestAcceptedModal(false);
   }
 
   const handleViewOtherRequests = () => {
     setShowRequestDeclinedModal(false);
     router.back();
+  }
+
+  const onRequestToParticipate = () => {
+    requestToParticipate({
+      event,
+      flexr_id: event?.hostInfo?.id,
+      callBack: ({ }) => { }
+    })
   }
 
   return (
@@ -235,53 +275,80 @@ export default function EventDetails() {
         {/* Timer */}
         {status === 'available' && (
           <AttendanceTimer
-            isClockedIn={isClockedIn}
-            timeDisplay={formatTime(remainingTime)}
-            remainingTime={remainingTime}
-            status={status} // <-- New prop for synchronization and fading
+            start_time={event?.start_time}
+            duration={event?.duration}
+            attendance_duration={event?.attendance_duration}
+            clocked_in_at={clockedInAt}
+            clocked_out_at={clockedOutAt}
+
+          // isClockedIn={clockedInAt}
+          // timeDisplay={formatTime(remainingTime)}
+          // remainingTime={remainingTime}
+          // status={status} // 
           />
         )}
 
         {/* Expandable Details */}
         {/* Event details */}
-        {(status === 'unavailable' || (status === 'available' && showDetails)) && (
-          <EventDetailsContent event={event} status={status} />
-        )}
+        <EventDetailsContent event={event} status={status} attendees={attendees} showDetails={showDetails} />
 
         <View style={{ height: 100 }} />
       </ScrollView>
 
       {/* Action Buttons */}
       {/* <ActionButtons
-        isClockedIn={isClockedIn}
+        clockedInAt={clockedInAt}
         onClockOut={() => setShowClockOutModal(true)}
       /> */}
 
       {/* Action Buttons */}
-      {status === "unavailable" ? (
-        <ActionButtons
-          btn1="Decline"
-          btn2="Accept"
-          // Decline opens the Decline Request confirmation modal
-          onBtn1Press={() => setShowDeclineRequestModal(true)}
-          // Accept opens the Confirm Acceptance modal
-          onBtn2Press={() => setShowConfirmAcceptanceModal(true)}
-        />
-      ) : status === "available" && !isClockedIn ? (
-        <ActionButtons
-          btn1="Clock Out"
-          btn2="Clock In"
-          disableBtn1={true}
-          onBtn2Press={() => setShowClockInConfirmationModal(true)}
-        />
-      ) : isClockedIn ? (
-        <ActionButtons
-          btn1="Clock Out"
-          btn2="Clock In"
-          onBtn1Press={() => setShowClockOutModal(true)}
-          disableBtn2={true}
-        />
-      ) : null}
+      {
+        status === null
+          ?
+          <ActionButtons
+            // btn1="Decline"
+            btn2="Request to participate"
+            // Decline opens the Decline Request confirmation modal
+            // onBtn1Press={() => setShowDeclineRequestModal(true)}
+            // Accept opens the Confirm Acceptance modal
+            onBtn2Press={onRequestToParticipate}
+          />
+          :
+          status === 'unavailable'
+            ?
+            <ActionButtons
+              btn1="Decline"
+              btn2="Accept"
+              // Decline opens the Decline Request confirmation modal
+              onBtn1Press={() => setShowDeclineRequestModal(true)}
+              // Accept opens the Confirm Acceptance modal
+              onBtn2Press={() => setShowConfirmAcceptanceModal(true)}
+            />
+            :
+            status === 'pending'
+            &&
+            <ActionButtons
+              btn1="Awaiting approval"
+              onBtn1Press={() => {}}
+              disableBtn1={true}
+            />
+        // : status === "available" && !clockedInAt ? (
+        //   <ActionButtons
+        //     btn1="Clock Out"
+        //     btn2="Clock In"
+        //     disableBtn1={true}
+        //     onBtn2Press={() => setShowClockInConfirmationModal(true)}
+        //   />
+        // ) : clockedInAt ? (
+        //   <ActionButtons
+        //     btn1="Clock Out"
+        //     btn2="Clock In"
+        //     onBtn1Press={() => setShowClockOutModal(true)}
+        //     disableBtn2={true}
+        //   />
+        // ) : null
+      }
+
 
       {/* Modals */}
 
@@ -312,11 +379,11 @@ export default function EventDetails() {
         onConfirm={handleAcceptRequest}
       />
 
-      <RequestAcceptedModal
+      {/* <RequestAcceptedModal
         visible={showRequestAcceptedModal}
         onClose={() => setShowRequestAcceptedModal(false)}
         onViewDetails={handleViewDetailsAfterAccept}
-      />
+      /> */}
 
       <DeclineRequestModal
         visible={showDeclineRequestModal}

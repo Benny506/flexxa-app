@@ -1,63 +1,52 @@
-import React, { useState } from 'react';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-    View,
-    Text,
-    StyleSheet,
     ScrollView,
-    TouchableOpacity,
     StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useSelector } from 'react-redux';
 import EventCard from '../../../components/EventCard'; // Use the existing EventCard component
+import ZeroItems from '../../../components/ZeroItems';
+import useApiReqs from '../../../hooks/useApiReqs';
+import { getEventsState } from '../../../redux/slices/eventsSlice';
 
 export default function FlexrRequests() {
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState('New');
 
-    const tabs = [
-        { id: 'New', label: 'New', count: 3 },
-        { id: 'Upcoming', label: 'Upcoming', count: null },
-        { id: 'Past', label: 'Past', count: null },
-        { id: 'Declined', label: 'Declined', count: null },
-    ];
+    const { fetchEvents } = useApiReqs()
 
-    const requests = [
-        {
-            id: 1,
-            date: { month: 'oct', day: '20' },
-            title: 'Bikini Pool Party',
-            time: 'Fri, 12:00pm - 10:00pm',
-            location: 'Giwa gardens, lagos',
-            price: '₦5,000',
-            // Mapped to EventCard's 'status' prop
-            status: 'Regular ticket', 
-        },
-        {
-            id: 2,
-            date: { month: 'dec', day: '31' },
-            title: 'Oworoshoki Street Carnival',
-            time: 'Sat, 12:00am - 5:00am',
-            location: 'Oworoshoki street, lagos',
-            price: '₦2,000',
-            // Mapped to EventCard's 'status' prop
-            status: 'Earlybird ticket',
-        },
-        {
-            id: 3,
-            date: { month: 'dec', day: '10' },
-            title: 'Club Party',
-            time: 'Fri, 11:00pm - 5:00am',
-            location: 'Cubana club ikeja, lagos',
-            price: '₦12,000',
-            // Mapped to EventCard's 'status' prop
-            status: 'Premium ticket', 
-        },
-    ];
+    const events = useSelector(state => getEventsState(state).events)
+    const eventsCount = useSelector(state => getEventsState(state).counts)
 
-    const handleRequestPress = (requestId) => {
-        router.push(`/event-details/${requestId}`);
+    const [activeTab, setActiveTab] = useState('new');
+    const [canLoadMore, setCanLoadMore] = useState(false)
+
+    useEffect(() => {
+        fetchEvents({
+            callBack: ({ canLoadMore }) => {
+                setCanLoadMore(canLoadMore)
+            }
+        })
+    }, [])
+
+    const filteredEvents = events?.filter(e => {
+        const { status } = e
+
+        const matchesTab = status?.toLowerCase() === activeTab?.toLowerCase()
+
+        return matchesTab
+    })
+
+    const handleRequestPress = ({ event }) => {
+        router.push({
+            pathname: `/event-details`,
+            params: { event: JSON.stringify(event) }
+        });
     };
 
     return (
@@ -65,52 +54,83 @@ export default function FlexrRequests() {
             <StatusBar barStyle="dark-content" />
 
             <View style={styles.header}>
-                <Text style={styles.headerTitle}>My Flexr Requests</Text>
+                <Text style={styles.headerTitle}>Events</Text>
             </View>
 
-            <View style={styles.tabsContainer}>
-                {tabs.map((tab) => (
-                    <TouchableOpacity
-                        key={tab.id}
-                        style={styles.tab}
-                        onPress={() => setActiveTab(tab.id)}
-                    >
-                        <View style={styles.tabContent}>
-                            <Text
-                                style={[
-                                    styles.tabText,
-                                    activeTab === tab.id && styles.tabTextActive,
-                                ]}
+            <View style={{
+            }}>
+                <ScrollView
+                    horizontal={true}
+                    contentContainerStyle={styles.tabsContainer}
+                >
+                    {Object.keys(eventsCount).map((tab, i) => {
+
+                        const isActive = activeTab === tab ? true : false
+
+                        const count = eventsCount[tab]
+
+                        return (
+                            <TouchableOpacity
+                                key={i}
+                                style={styles.tab}
+                                onPress={() => setActiveTab(tab)}
                             >
-                                {tab.label}
-                            </Text>
-                            {tab.count && (
-                                <View style={styles.countBadge}>
-                                    <Text style={styles.countText}>{tab.count}</Text>
+                                <View style={styles.tabContent}>
+                                    <Text
+                                        style={[
+                                            styles.tabText,
+                                            isActive && styles.tabTextActive,
+                                            {
+                                                textTransform: 'capitalize'
+                                            }
+                                        ]}
+                                    >
+                                        {tab}
+                                    </Text>
+                                    {count && (
+                                        <View style={styles.countBadge}>
+                                            <Text style={styles.countText}>{count}</Text>
+                                        </View>
+                                    )}
                                 </View>
-                            )}
-                        </View>
-                        {activeTab === tab.id && <View style={styles.tabIndicator} />}
-                    </TouchableOpacity>
-                ))}
+                                {isActive && <View style={styles.tabIndicator} />}
+                            </TouchableOpacity>
+                        )
+                    })}
+                </ScrollView>
             </View>
 
-            <ScrollView
-                style={styles.scrollView}
-                showsVerticalScrollIndicator={false}
-            >
-                {requests.map((request) => (
-                    // Reusing the EventCard component
-                    <EventCard 
-                        key={request.id}
-                        event={request} // Pass the request object directly
-                        onPress={handleRequestPress}
-                    />
-                ))}
-                
-                {/* Add bottom spacing if needed */}
-                <View style={{ height: 20 }} />
-            </ScrollView>
+            <View style={{
+                flex: 1
+            }}>
+                <ScrollView
+                    contentContainerStyle={{
+                        ...styles.scrollView,
+                        flexGrow: 1
+                    }}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {
+                        filteredEvents?.length > 0
+                            ?
+                            filteredEvents.map((evt) => (
+                                // Reusing the EventCard component
+                                <EventCard
+                                    key={evt.id}
+                                    event={evt}
+                                    onPress={() => handleRequestPress({ event: evt })}
+                                />
+                            ))
+                            :
+                            <ZeroItems
+                                zeroText={"No events found"}
+                            />
+                    }
+
+                    {/* Add bottom spacing if needed */}
+                    <View style={{ height: 20 }} />
+                </ScrollView>
+            </View>
         </SafeAreaView>
     );
 }
@@ -134,9 +154,10 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         borderBottomWidth: 1,
         borderBottomColor: '#F0F0F0',
+        gap: 24
     },
     tab: {
-        marginRight: 24,
+        // marginRight: 24,
         paddingBottom: 12,
     },
     tabContent: {
@@ -178,7 +199,7 @@ const styles = StyleSheet.create({
     scrollView: {
         flex: 1,
         // Add vertical padding to match the previous list style
-        paddingVertical: 12, 
+        paddingVertical: 12,
     },
     // Removed all requestCard, dateBadge, and ticketBadge styles as they are now handled by EventCard.js
 });

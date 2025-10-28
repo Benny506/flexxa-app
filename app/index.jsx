@@ -1,30 +1,73 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { useDispatch } from 'react-redux';
+import AppLoading from '../components/loaders/AppLoading';
+import { automaticLogin } from '../database/dbInit';
+import { setUserDetails } from '../redux/slices/userDetailsSlice';
 
 const ONBOARDING_KEY = 'hasSeenOnboarding';
 
 export default function Index() {
+  const dispatch = useDispatch()
+
   const router = useRouter();
 
   useEffect(() => {
-    const checkOnboarding = async () => {
-      const seen = await AsyncStorage.getItem(ONBOARDING_KEY);
-      if (seen === 'true') {
-        router.replace('/splash');        
-        // router.replace('/(main)/(tabs)/home');
-      } else {
-        router.replace('/splash');
-        // router.replace('/(main)/(tabs)/home');
+    const init = async () => {
+      try {
+        const userData = await automaticLogin();
+
+        if (userData) {
+          const { session, user, profile, phone_number } = userData
+
+          dispatch(setUserDetails({
+            ...userData
+          }))
+
+          checkOnboarding({
+            profileFinished: userData?.profile?.gender ? true : false
+          })
+        }
+
+        throw new Error()
+
+      } catch (error) {
+        console.log(error)
+        goToSplash()
       }
     };
-    checkOnboarding();
+
+    init();
   }, []);
+
+  const checkOnboarding = async ({ profileFinished }) => {
+    console.log(profileFinished)
+    const seen = await AsyncStorage.getItem(ONBOARDING_KEY);
+
+    if (seen === 'true') {
+      if (profileFinished) {
+        goHome()
+
+      } else {
+        goToFinishProfile()
+      }
+
+    } else {
+      goToSplash()
+    }
+  };
+
+  const goHome = () => router.replace('/(main)/(tabs)/home');
+  const goToFinishProfile = () => router.replace('/(main)/(tabs)/home');
+  const goToSplash = () => router.replace('/splash');
 
   return (
     <View style={styles.container}>
-      <ActivityIndicator size="large" color="#4F46E5" />
+      <AppLoading
+        tempLoading={true}
+      />
     </View>
   );
 }

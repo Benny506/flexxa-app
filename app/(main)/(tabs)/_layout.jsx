@@ -63,7 +63,8 @@ export default function TabsLayout() {
       <Tabs.Screen 
         name="request" 
         options={{
-          title: 'Request',
+          title: 'Events',
+          unmountOnBlur: true,
           tabBarIcon: ({ color, focused }) => (
             <View style={{ alignItems: 'center', justifyContent: 'center', width: '100%', minWidth: 60 }}>
               <Ionicons 
@@ -77,7 +78,7 @@ export default function TabsLayout() {
                 marginTop: 4,
                 fontWeight: '500'
               }} numberOfLines={1}>
-                Request
+                Events
               </Text>
               {focused && (
                 <View 

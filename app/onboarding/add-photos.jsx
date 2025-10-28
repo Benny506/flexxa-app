@@ -12,12 +12,17 @@ import {
     View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../../assets/images/loader.svg';
 import BackButton from '../../components/back-button';
+import ErrorMsg1 from '../../components/ErrorMsg1';
 import ProgressIndicator from '../../components/progress-indicator';
+import useApiReqs from '../../hooks/useApiReqs';
 import { useAppNavigation } from '../../hooks/useAppNavigation';
 import { setAppAlert } from '../../redux/slices/appAlertSlice';
+import { appLoadStart, appLoadStop } from '../../redux/slices/appLoadingSlice';
+import { getUserDetailsState } from '../../redux/slices/userDetailsSlice';
+import { uploadAssets } from '../../utils/apiRequests/requestApi';
 
 
 export default function AddPhotos() {
@@ -27,10 +32,14 @@ export default function AddPhotos() {
 
     const router = useRouter();
 
+    const { updateProfile } = useApiReqs()
+
     const params = useLocalSearchParams()
 
+    const user = useSelector(state => getUserDetailsState(state).user)
+
     const [photos, setPhotos] = useState([null, null, null, null, null]);
-    const [loading, setLoading] = useState(false);
+    const [apiReqs, setApiReqs] = useState({ isLoading: false, errorMsg: null, data: null });
 
     useEffect(() => {
         if (!params?.email || !params?.interests) {
@@ -65,23 +74,57 @@ export default function AddPhotos() {
         setPhotos(newPhotos);
     };
 
-    const handleNext = async () => {
-        const hasAtLeastOnePhoto = photos.some(photo => photo !== null);
+    const uploadFiles = async () => {
+        try {
+            const hasAtLeastOnePhoto = photos.some(photo => photo !== null);
 
-        if (!hasAtLeastOnePhoto) {
-            return dispatch(setAppAlert({ msg: 'Upload at least one photo', type: 'info' }))
-        }
-
-        const filteredPhotos = photos?.filter(Boolean)
-
-        router.push({
-            pathname: '/verification',
-            params: {
-                ...params,
-                photos: filteredPhotos
+            if (!hasAtLeastOnePhoto) {
+                return dispatch(setAppAlert({ msg: 'Upload at least one photo', type: 'info' }))
             }
-        });
+
+            const filteredPhotos = photos?.filter(Boolean)
+
+            dispatch(appLoadStart())
+
+            const { uris, error } = await uploadAssets({ uris: filteredPhotos, bucket_name: 'user_profiles', ext: 'png', id: user?.id })
+
+            if (error) throw new Error();
+
+            const update = {
+                gender: params?.gender,
+                interests: params?.interests?.split(","),
+                profile_imgs: uris,
+                preferences: {
+                    drinking: params?.drinkingPreferences,
+                    allergies: params?.hasAllergies,
+                    healthConditions: params?.hasHealthConditions,
+                    smoking: params?.smokingPreferences,
+                    healthConditionsText: params?.healthConditionsText,
+                    allergiesText: params?.allergiesText
+                }
+            }
+
+            await updateProfile({
+                update,
+                callBack: ({}) => {
+                    router.push('/verification');
+                }
+            })
+            
+
+        } catch (error) {
+            console.log(error)
+            return apiReqError({ errorMsg: 'Error uploading profile pictures! Try again later.' })
+        }
     };
+
+    const apiReqError = ({ errorMsg }) => {
+        setApiReqs({ isLoading: false, errorMsg: null, data: null })
+        dispatch(setAppAlert({ msg: errorMsg, type: 'error' }))
+        dispatch(appLoadStop())
+
+        return;
+    }
 
     const hasAtLeastOnePhoto = photos.some(photo => photo !== null);
 
@@ -184,6 +227,12 @@ export default function AddPhotos() {
 
                 <View style={styles.spacer} />
 
+                {
+                    apiReqs.errorMsg
+                    &&
+                    <ErrorMsg1 errorMsg={apiReqs.errorMsg} isCentered={true} />
+                }
+
                 {/* Info Message */}
                 <View style={styles.infoContainer}>
                     <Ionicons name="information-circle-outline" size={20} color="#666" />
@@ -199,19 +248,19 @@ export default function AddPhotos() {
                         styles.nextButton,
                         !hasAtLeastOnePhoto && styles.nextButtonDisabled
                     ]}
-                    onPress={handleNext}
-                    disabled={!hasAtLeastOnePhoto || loading}
+                    onPress={uploadFiles}
+                    disabled={!hasAtLeastOnePhoto || apiReqs.isLoading}
                 >
-                    {loading ? (
+                    {apiReqs.isLoading ? (
                         <ActivityIndicator color="#fff" />
                     ) : (
-                        <Text style={styles.nextButtonText}>Next</Text>
+                        <Text style={styles.nextButtonText}>Create Profile</Text>
                     )}
                 </TouchableOpacity>
             </View>
 
             {/* Loading Overlay */}
-            {loading && (
+            {apiReqs.isLoading && (
                 <View style={styles.loadingOverlay}>
                     <Loader />
                     <Text style={styles.loadingText}>Loading...</Text>

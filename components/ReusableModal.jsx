@@ -1,7 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function ReusableModal({
   visible,
@@ -35,7 +34,13 @@ export default function ReusableModal({
 
           {icon && (
             <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
-              <Ionicons name={icon} size={48} color={iconColor} />
+              {
+                typeof icon === 'object'
+                ?
+                icon
+                :
+                <Ionicons name={icon} size={48} color={iconColor} />
+              }
             </View>
           )}
 

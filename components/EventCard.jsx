@@ -1,32 +1,42 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { getDayOfMonth, getShortDayOfWeek, getShortMonth, getTimeRange } from '../utils/dateUtils';
+import { formatNumberWithCommas } from '../utils/utils';
 
 export default function EventCard({ event, onPress }) {
+
+  if(!event) return <></>
+
+  const dayOfTheMonth = getDayOfMonth({ date: event?.date })
+  const shortMonthText = getShortMonth({ date: event?.date })
+  const shortWeekDayText = getShortDayOfWeek({ date: event?.date })
+  const durationString = getTimeRange({ start_time: event?.start_time, duration: event?.duration })
+
   return (
     <TouchableOpacity
       style={styles.eventCard}
-      onPress={() => onPress(event.id)}
+      onPress={() => onPress(event?.id)}
     >
       <View style={styles.eventDate}>
-        <Text style={styles.eventMonth}>{event.date.month}</Text>
-        <Text style={styles.eventDay}>{event.date.day}</Text>
+        <Text style={styles.eventMonth}>{shortMonthText}</Text>
+        <Text style={styles.eventDay}>{dayOfTheMonth}</Text>
       </View>
 
       <View style={styles.divider} />
 
       <View style={styles.eventDetails}>
         <View style={styles.eventHeader}>
-          <Text style={styles.eventTitle}>{event.title}</Text>
-          <Text style={[
+          <Text style={styles.eventTitle}>{event?.title}</Text>
+          {/* <Text style={[
             styles.eventStatus,
             event.status === 'Regular ticket' ? styles.statusReply : styles.statusIssue
           ]}>
             {event.status}
-          </Text>
+          </Text> */}
         </View>
-        <Text style={styles.eventTime}>{event.time}</Text>
-        <Text style={styles.eventLocation}>{event.location}</Text>
-        <Text style={styles.eventPrice}>{event.price}</Text>
+        <Text style={styles.eventTime}>{shortWeekDayText}, {durationString}</Text>
+        <Text style={styles.eventLocation}>{event.address}, {event?.city}, {event?.state}, {event?.country}</Text>
+        <Text style={styles.eventPrice}>{formatNumberWithCommas({ value: event?.price_reward })}</Text>
       </View>
 
       <Ionicons
@@ -71,7 +81,8 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
   },
   eventDetails: {
-    flex: 1,
+    // flex: 1,
+    width: '65%',
   },
   eventHeader: {
     flexDirection: 'row',

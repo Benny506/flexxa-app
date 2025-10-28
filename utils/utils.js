@@ -1,16 +1,5 @@
 import { DateTime, IANAZone } from 'luxon';
 
-/**
- * Validate a date built from numeric year, month, and day.
- *
- * @param {number} year - The full year (e.g., 2025)
- * @param {number} month - The month (1–12)
- * @param {number} day - The day of the month (1–31)
- * @param {Object} [options] - Optional validation flags
- * @param {boolean} [options.mustBeFuture=false] - Require the date to be today or in the future
- * @param {boolean} [options.mustBePast=false] - Require the date to be in the past
- * @returns {{ valid: boolean, reason?: string }}
- */
 export function validateDate({ year, month, day, options = {} }) {
   const { mustBeFuture = false, mustBePast = false } = options;
 
@@ -108,3 +97,8 @@ export function isValidEmail({ email }) {
 
   return pattern.test(email.trim());
 }
+
+export const formatNumberWithCommas = ({ value }) => {
+  if (value === null || value === undefined || isNaN(Number(value))) return '0';
+  return Number(value).toLocaleString();
+};

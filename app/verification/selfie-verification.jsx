@@ -1,27 +1,35 @@
-import React from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
-    View,
-    Text,
-    TouchableOpacity,
-    StyleSheet,
-    StatusBar,
     Image,
     ScrollView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useDispatch } from 'react-redux';
 import SkipButton from '../../components/skip-button';
 
 export default function SelfieVerificationScreen() {
+    const dispatch = useDispatch()
+    
     const router = useRouter();
 
+    const params = useLocalSearchParams()
+
     const handleTakeSelfie = () => {
-        router.push('/verification/camera-capture');
+        router.push({
+            pathname: '/verification/camera-capture',
+            params
+        });
     };
 
     const handleSkip = () => {
-        router.push('/dashboard');
+        dispatchEvent
+        // router.push('/dashboard');
     };
 
     return (
