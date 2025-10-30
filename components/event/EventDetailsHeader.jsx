@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { formatNumberWithCommas } from '../../utils/utils';
 
 export default function EventDetailsHeader({
   event,
@@ -9,30 +9,31 @@ export default function EventDetailsHeader({
   status,
   onUpdateAvailability,
 }) {
+
   return (
     <>
       {/* Event Image */}
-      <Image source={{ uri: event.image }} style={styles.eventImage} />
+      <Image source={{ uri: event?.image_url }} style={styles.eventImage} />
 
       {/* Title & Price */}
       <View style={styles.titleContainer}>
         {/* Ticket Badge */}
-        <View style={styles.ticketBadge}>
+        {/* <View style={styles.ticketBadge}>
           <Text style={styles.ticketText}>{event.ticketType}</Text>
-        </View>
+        </View> */}
 
         <View style={styles.titleRow}>
           <Text style={styles.eventTitle}>{event.title}</Text>
 
           <View style={styles.priceCol}>
-            <Text style={styles.eventPrice}>{event.price}</Text>
+            <Text style={styles.eventPrice}>{formatNumberWithCommas({ value: event.price_reward })}</Text>
             <View style={styles.rewardBadge}>
               <Ionicons name="gift" size={12} color="#000" />
-              <Text style={styles.rewardText}>{event.reward}</Text>
+              <Text style={styles.rewardText}>{'Reward'}</Text>
             </View>
           </View>
         </View>
-
+{/* 
         {status === 'available' && (
           <TouchableOpacity
             style={styles.expandButton}
@@ -44,7 +45,7 @@ export default function EventDetailsHeader({
               color="#484ed4"
             />
           </TouchableOpacity>
-        )}
+        )} */}
 
       </View>
 
@@ -69,15 +70,16 @@ export default function EventDetailsHeader({
             </TouchableOpacity>
           </View>
         ) : status === 'unavailable' && (
-          <View style={styles.statusRow}>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <Text style={styles.statusLabel}>Status</Text>
-              <Text style={styles.statusTextUnavailable}>Unavailable</Text>
-            </View>
-            <TouchableOpacity onPress={onUpdateAvailability}>
-              <Text style={[styles.updateLink, styles.fadedLink]}>Update Availability</Text>
-            </TouchableOpacity>
-          </View>
+          <></>
+          // <View style={styles.statusRow}>
+          //   <View style={{ flexDirection: 'row', gap: 8 }}>
+          //     <Text style={styles.statusLabel}>Status</Text>
+          //     <Text style={styles.statusTextUnavailable}>Unavailable</Text>
+          //   </View>
+          //   <TouchableOpacity onPress={onUpdateAvailability}>
+          //     <Text style={[styles.updateLink, styles.fadedLink]}>Update Availability</Text>
+          //   </TouchableOpacity>
+          // </View>
         )}
       </View>
     </>

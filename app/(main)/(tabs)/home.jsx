@@ -1,37 +1,26 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSelector } from 'react-redux';
 import EventCard from '../../../components/EventCard';
+import ZeroItems from '../../../components/ZeroItems';
+import { useAppNavigation } from '../../../hooks/useAppNavigation';
+import { getUserDetailsState } from '../../../redux/slices/userDetailsSlice';
+import colors from '../../../utils/colors/colors';
 
 export default function HomeScreen() {
   const router = useRouter();
+
+  const { fullTabNavigateTo } = useAppNavigation()
+
+  const flexrRequests = useSelector(state => getUserDetailsState(state).flexrRequests)
+  const myRequests = useSelector(state => getUserDetailsState(state).myRequests)
 
   const userStats = {
     eventsAttended: 10,
     eventsCreated: 3,
     eventsHosting: 15
   };
-
-  const events = [
-    {
-      id: 1,
-      date: { month: 'oct', day: '20' },
-      title: 'Bikini Pool Party',
-      time: 'Fri, 12:00pm - 10:00pm',
-      location: 'Chez gardens, legos',
-      price: '₦4,000',
-      status: 'Regular ticket'
-    },
-    {
-      id: 2,
-      date: { month: 'dec', day: '21' },
-      title: 'Owonishoki Street Carnival',
-      time: 'Sat, 12:00pm - 5:00pm',
-      location: 'Owonishoki street, lagos',
-      price: '₦2,000',
-      status: 'Earlybird ticket'
-    }
-  ];
 
   const handleProfilePress = () => {
     router.push('/profile')
@@ -41,11 +30,15 @@ export default function HomeScreen() {
     router.push('/notifications');
   };
 
-  const handleEventPress = (eventId) => {
-    router.push(`/event-details/${eventId}`);
+  const handleEventPress = ({ event }) => {
+    router.push({
+      pathname: `/event-details`,
+      params: { event: JSON.stringify(event) }
+    });
   };
 
-  const handleViewInvitations = () => {
+  const handleMyEvents = () => {
+    router.push('/my-events')
   };
 
   return (
@@ -85,8 +78,8 @@ export default function HomeScreen() {
           </View>
 
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{userStats.eventsHosting}</Text>
-            <Text style={styles.statLabel}>Events Hosting</Text>
+            <Text style={styles.statNumber}>{flexrRequests?.length}</Text>
+            <Text style={styles.statLabel}>Event invites</Text>
           </View>
         </View>
 
@@ -94,19 +87,55 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>Flexr Requests</Text>
         </View>
 
-        {events.map((event) => (
-          <EventCard 
-            key={event.id}
-            event={event}
-            onPress={handleEventPress}
-          />
-        ))}
+        {
+          flexrRequests?.length > 0
+            ?
+            flexrRequests.map((req) => (
+              <EventCard
+                key={req?.events?.id}
+                event={req?.events}
+                onPress={() => handleEventPress({ event: req?.events })}
+              />
+            ))
+            :
+            <ZeroItems
+              zeroText={'No flexr has requested you to partake in their event!'}
+            />
+        }
+
+        <View 
+          style={{
+            height: 1, width: '100%',
+            marginVertical: 20,
+            backgroundColor: colors._13BEBB
+          }}
+        />
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>My Requests</Text>
+        </View>
+
+        {
+          myRequests?.length > 0
+            ?
+            myRequests.map((req) => (
+              <EventCard
+                key={req?.events?.id}
+                event={req?.events}
+                onPress={() => handleEventPress({ event: req?.events })}
+              />
+            ))
+            :
+            <ZeroItems
+              zeroText={'You have not requested to partake in any event yet!'}
+            />
+        }
 
         <TouchableOpacity
           style={styles.viewInvitationsBtn}
-          onPress={handleViewInvitations}
+          onPress={handleMyEvents}
         >
-          <Text style={styles.viewInvitationsText}>View Invitations</Text>
+          <Text style={styles.viewInvitationsText}>My events</Text>
         </TouchableOpacity>
 
         <View style={styles.bottomSpacer} />

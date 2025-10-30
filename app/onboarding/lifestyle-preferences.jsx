@@ -1,25 +1,48 @@
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-    View,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
     Text,
     TouchableOpacity,
-    StyleSheet,
-    StatusBar,
-    ScrollView,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import BackButton from '../../components/back-button';
 import ProgressIndicator from '../../components/progress-indicator';
+import { useAppNavigation } from '../../hooks/useAppNavigation';
 
 export default function LifestylePreferencesScreen() {
+
+    const { goBack } = useAppNavigation()
+
     const router = useRouter();
+
+    const params = useLocalSearchParams()
+
     const [smokingPreference, setSmokingPreference] = useState('');
     const [drinkingPreference, setDrinkingPreference] = useState('');
 
+    useEffect(() => {
+        if(!params?.email || !params?.gender){
+            goBack()
+        }
+    }, [])
+
+    if(!params?.email || !params?.gender) return <></>
+
     const handleNext = () => {
         if (smokingPreference && drinkingPreference) {
-            router.push('/onboarding/health-allergies');
+            router.push({
+                pathname: '/onboarding/health-allergies',
+                params: {
+                    ...params,
+                    smokingPreference,
+                    drinkingPreference
+                }
+            });
         }
     };
 
@@ -44,6 +67,12 @@ export default function LifestylePreferencesScreen() {
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
             <StatusBar barStyle="dark-content" />
+
+            <View style={{ paddingHorizontal: 24, marginBottom: 15 }}>
+                <BackButton
+                    onPress={goBack}
+                />
+            </View>            
             
             <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
                 <View style={styles.content}>

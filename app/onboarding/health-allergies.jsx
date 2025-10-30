@@ -1,34 +1,98 @@
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-    View,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    StyleSheet,
-    StatusBar,
-    ScrollView,
-    KeyboardAvoidingView,
-    Platform,
+    View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useDispatch } from 'react-redux';
+import BackButton from '../../components/back-button';
 import ProgressIndicator from '../../components/progress-indicator';
+import { useAppNavigation } from '../../hooks/useAppNavigation';
+import { setAppAlert } from '../../redux/slices/appAlertSlice';
 
 export default function HealthAllergiesScreen() {
+    const dispatch = useDispatch()
+
+    const { goBack } = useAppNavigation()
+
     const router = useRouter();
+
+    const params = useLocalSearchParams()
+
     const [hasHealthConditions, setHasHealthConditions] = useState('');
     const [healthConditionsText, setHealthConditionsText] = useState('');
     const [hasAllergies, setHasAllergies] = useState('');
     const [allergiesText, setAllergiesText] = useState('');
 
-    const handleNext = () => {
-        if (hasHealthConditions && hasAllergies) {
-            router.push('/onboarding/interests');
+    useEffect(() => {
+        if (!params?.email || !params?.smokingPreference || !params?.drinkingPreference) {
+            goBack()
         }
+    }, [])
+
+    if (!params?.email || !params?.smokingPreference || !params?.drinkingPreference) return <></>
+
+    const canNext = () => {
+        if (hasHealthConditions === 'Yes' && !healthConditionsText) {
+            return false
+        }
+
+        if (hasAllergies === 'Yes' && !allergiesText) {
+            return false
+        }
+
+        if (!hasAllergies || !hasHealthConditions) {
+            return false
+        }
+
+        return true
+    }
+
+    const handleNext = () => {
+        if (!canNext()) {
+            dispatch(setAppAlert({ msg: 'All fields are required', type: 'info' }))
+            return
+        }
+
+        if (hasHealthConditions && hasAllergies) {
+
+            const healthSettings = {
+                hasHealthConditions,
+                hasAllergies
+            }
+
+            if (hasHealthConditions === 'Yes') {
+                healthSettings['healthConditionsText'] = healthConditionsText
+            }
+
+            if (hasAllergies === 'Yes') {
+                healthSettings['allergiesText'] = allergiesText
+            }
+
+            router.push({
+                pathname: '/onboarding/interests',
+                params: {
+                    ...params,
+                    ...healthSettings
+                }
+            });
+
+            return;
+        }
+
+        dispatch(setAppAlert({ msg: 'All fields are required', type: 'info' }));
     };
 
-    const isFormComplete = hasHealthConditions && hasAllergies;
+    const isFormComplete = canNext()
 
     const RadioOption = ({ label, selected, onPress }) => (
         <TouchableOpacity
@@ -49,6 +113,12 @@ export default function HealthAllergiesScreen() {
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
             <StatusBar barStyle="dark-content" />
+
+            <View style={{ paddingHorizontal: 24, marginBottom: 15 }}>
+                <BackButton
+                    onPress={goBack}
+                />
+            </View>
 
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

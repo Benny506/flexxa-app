@@ -1,25 +1,53 @@
-import React, { useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-    View,
+    ActivityIndicator,
+    Image,
+    StatusBar,
+    StyleSheet,
     Text,
     TouchableOpacity,
-    StyleSheet,
-    StatusBar,
-    Image,
-    Alert,
-    ActivityIndicator,
+    View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import * as ImagePicker from 'expo-image-picker';
+import { useDispatch, useSelector } from 'react-redux';
+import Loader from '../../assets/images/loader.svg';
+import BackButton from '../../components/back-button';
+import ErrorMsg1 from '../../components/ErrorMsg1';
 import ProgressIndicator from '../../components/progress-indicator';
-import Loader from '../../assets/images/loader.svg'
+import useApiReqs from '../../hooks/useApiReqs';
+import { useAppNavigation } from '../../hooks/useAppNavigation';
+import { setAppAlert } from '../../redux/slices/appAlertSlice';
+import { appLoadStart, appLoadStop } from '../../redux/slices/appLoadingSlice';
+import { getUserDetailsState } from '../../redux/slices/userDetailsSlice';
+import { uploadAssets } from '../../utils/apiRequests/requestApi';
+
 
 export default function AddPhotos() {
+    const dispatch = useDispatch()
+
+    const { goBack } = useAppNavigation()
+
     const router = useRouter();
+
+    const { updateProfile } = useApiReqs()
+
+    const params = useLocalSearchParams()
+
+    const user = useSelector(state => getUserDetailsState(state).user)
+
     const [photos, setPhotos] = useState([null, null, null, null, null]);
-    const [loading, setLoading] = useState(false);
+    const [apiReqs, setApiReqs] = useState({ isLoading: false, errorMsg: null, data: null });
+
+    useEffect(() => {
+        if (!params?.email || !params?.interests) {
+            goBack()
+        }
+    }, [])
+
+    if (!params?.email || !params?.interests) return <></>
 
     const pickImage = async (index) => {
         try {
@@ -36,7 +64,7 @@ export default function AddPhotos() {
                 setPhotos(newPhotos);
             }
         } catch (error) {
-            Alert.alert('Error', 'Failed to pick image');
+            dispatch(setAppAlert({ msg: 'Failed to pick image', type: 'error' }))
         }
     };
 
@@ -46,33 +74,69 @@ export default function AddPhotos() {
         setPhotos(newPhotos);
     };
 
-    const handleNext = async () => {
-        const hasAtLeastOnePhoto = photos.some(photo => photo !== null);
-
-        if (!hasAtLeastOnePhoto) {
-            return;
-        }
-
-        setLoading(true);
-
+    const uploadFiles = async () => {
         try {
-            // Simulate upload
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            const hasAtLeastOnePhoto = photos.some(photo => photo !== null);
 
-            // Navigate to main app or dashboard
-            router.push('/verification');
+            if (!hasAtLeastOnePhoto) {
+                return dispatch(setAppAlert({ msg: 'Upload at least one photo', type: 'info' }))
+            }
+
+            const filteredPhotos = photos?.filter(Boolean)
+
+            dispatch(appLoadStart())
+
+            const { uris, error } = await uploadAssets({ uris: filteredPhotos, bucket_name: 'user_profiles', ext: 'png', id: user?.id })
+
+            if (error) throw new Error();
+
+            const update = {
+                gender: params?.gender,
+                interests: params?.interests?.split(","),
+                profile_imgs: uris,
+                preferences: {
+                    drinking: params?.drinkingPreferences,
+                    allergies: params?.hasAllergies,
+                    healthConditions: params?.hasHealthConditions,
+                    smoking: params?.smokingPreferences,
+                    healthConditionsText: params?.healthConditionsText,
+                    allergiesText: params?.allergiesText
+                }
+            }
+
+            await updateProfile({
+                update,
+                callBack: ({}) => {
+                    router.push('/verification');
+                }
+            })
+            
+
         } catch (error) {
-            Alert.alert('Error', 'Failed to upload photos');
-        } finally {
-            setLoading(false);
+            console.log(error)
+            return apiReqError({ errorMsg: 'Error uploading profile pictures! Try again later.' })
         }
     };
+
+    const apiReqError = ({ errorMsg }) => {
+        setApiReqs({ isLoading: false, errorMsg: null, data: null })
+        dispatch(setAppAlert({ msg: errorMsg, type: 'error' }))
+        dispatch(appLoadStop())
+
+        return;
+    }
 
     const hasAtLeastOnePhoto = photos.some(photo => photo !== null);
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
             <StatusBar barStyle="dark-content" />
+
+            <View style={{ paddingHorizontal: 24, marginBottom: 15 }}>
+                <BackButton
+                    onPress={goBack}
+                />
+            </View>
 
             <View style={styles.content}>
                 {/* Title */}
@@ -163,6 +227,12 @@ export default function AddPhotos() {
 
                 <View style={styles.spacer} />
 
+                {
+                    apiReqs.errorMsg
+                    &&
+                    <ErrorMsg1 errorMsg={apiReqs.errorMsg} isCentered={true} />
+                }
+
                 {/* Info Message */}
                 <View style={styles.infoContainer}>
                     <Ionicons name="information-circle-outline" size={20} color="#666" />
@@ -178,19 +248,19 @@ export default function AddPhotos() {
                         styles.nextButton,
                         !hasAtLeastOnePhoto && styles.nextButtonDisabled
                     ]}
-                    onPress={handleNext}
-                    disabled={!hasAtLeastOnePhoto || loading}
+                    onPress={uploadFiles}
+                    disabled={!hasAtLeastOnePhoto || apiReqs.isLoading}
                 >
-                    {loading ? (
+                    {apiReqs.isLoading ? (
                         <ActivityIndicator color="#fff" />
                     ) : (
-                        <Text style={styles.nextButtonText}>Next</Text>
+                        <Text style={styles.nextButtonText}>Create Profile</Text>
                     )}
                 </TouchableOpacity>
             </View>
 
             {/* Loading Overlay */}
-            {loading && (
+            {apiReqs.isLoading && (
                 <View style={styles.loadingOverlay}>
                     <Loader />
                     <Text style={styles.loadingText}>Loading...</Text>

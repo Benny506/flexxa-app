@@ -1,84 +1,99 @@
-import React from 'react';
-import {
-    View,
-    Text,
-    TouchableOpacity,
-    StyleSheet,
-    StatusBar,
-    Image,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import FaceMesh from '../../assets/images/face-mesh.svg'
-import IdIcon from '../../assets/images/icons/id.svg'
-import SelfieIcon from '../../assets/images/icons/selfie.svg'
+import {
+    StatusBar,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import FaceMesh from '../../assets/images/face-mesh.svg';
+import IdIcon from '../../assets/images/icons/id.svg';
+import SelfieIcon from '../../assets/images/icons/selfie.svg';
+import BackButton from '../../components/back-button';
+import CustomScroll from '../../components/CustomScroll';
+import { useAppNavigation } from '../../hooks/useAppNavigation';
 
 export default function VerificationIndexScreen() {
+
+    const { goBack } = useAppNavigation()
+
     const router = useRouter();
 
     const handleStartVerification = () => {
-        router.push('/verification/upload-id');
+        router.push({
+            pathname: '/verification/upload-id',
+            params
+        });
     };
 
     return (
         <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
             <StatusBar barStyle="dark-content" />
-            
-            <View style={styles.content}>
-                {/* Face ID Illustration - Replace with your SVG/Image */}
-                <View style={styles.illustrationContainer}>
-                    <FaceMesh />
-                </View>
 
-                {/* Title */}
-                <Text style={styles.title}>Verify your identity!</Text>
-                <Text style={styles.subtitle}>
-                    We need to verify your identity to ensure a safe and trusted community for everyone.
-                </Text>
+            <View style={{ paddingHorizontal: 24, marginBottom: 15 }}>
+                <BackButton
+                    onPress={goBack}
+                />
+            </View>
 
-                {/* Options */}
-                <View style={styles.optionsContainer}>
-                    {/* Upload Government ID */}
-                    <View style={styles.optionCard}>
-                        <IdIcon style={styles.optionIcon} />
-                        <View style={styles.optionContent}>
-                            <Text style={styles.optionTitle}>Upload a Government-Issued ID</Text>
-                            <Text style={styles.optionSubtitle}>
-                                Passport, Driver's License, National ID Card
-                            </Text>
-                            <View style={styles.infoRow}>
-                                <Ionicons name="information-circle-outline" size={16} color="#999" />
-                                <Text style={styles.infoText}>
-                                    Take a clear photo or upload a scanned copy of your ID
+            <CustomScroll padding_H={0} padding_V={0}>
+                <View style={styles.content}>
+                    {/* Face ID Illustration - Replace with your SVG/Image */}
+                    <View style={styles.illustrationContainer}>
+                        <FaceMesh />
+                    </View>
+
+                    {/* Title */}
+                    <Text style={styles.title}>Verify your identity!</Text>
+                    <Text style={styles.subtitle}>
+                        We need to verify your identity to ensure a safe and trusted community for everyone.
+                    </Text>
+
+                    {/* Options */}
+                    <View style={styles.optionsContainer}>
+                        {/* Upload Government ID */}
+                        <View style={styles.optionCard}>
+                            <IdIcon style={styles.optionIcon} />
+                            <View style={styles.optionContent}>
+                                <Text style={styles.optionTitle}>Upload a Government-Issued ID</Text>
+                                <Text style={styles.optionSubtitle}>
+                                    Passport, Driver's License, National ID Card
+                                </Text>
+                                <View style={styles.infoRow}>
+                                    <Ionicons name="information-circle-outline" size={16} color="#999" />
+                                    <Text style={styles.infoText}>
+                                        Take a clear photo or upload a scanned copy of your ID
+                                    </Text>
+                                </View>
+                            </View>
+                        </View>
+
+                        {/* Take a Selfie */}
+                        <View style={styles.optionCard}>
+                            <SelfieIcon style={styles.optionIcon} />
+                            <View style={styles.optionContent}>
+                                <Text style={styles.optionTitle}>Take a Selfie</Text>
+                                <Text style={styles.optionSubtitle}>
+                                    Take a selfie to match your ID and confirm your identity.
                                 </Text>
                             </View>
                         </View>
                     </View>
 
-                    {/* Take a Selfie */}
-                    <View style={styles.optionCard}>
-                        <SelfieIcon style={styles.optionIcon} />
-                        <View style={styles.optionContent}>
-                            <Text style={styles.optionTitle}>Take a Selfie</Text>
-                            <Text style={styles.optionSubtitle}>
-                                Take a selfie to match your ID and confirm your identity.
-                            </Text>
-                        </View>
-                    </View>
+                    <View style={styles.spacer} />
+
+                    {/* Start Button */}
+                    <TouchableOpacity
+                        style={styles.startButton}
+                        onPress={handleStartVerification}
+                        activeOpacity={0.8}
+                    >
+                        <Text style={styles.startButtonText}>Start Verification</Text>
+                    </TouchableOpacity>
                 </View>
-
-                <View style={styles.spacer} />
-
-                {/* Start Button */}
-                <TouchableOpacity
-                    style={styles.startButton}
-                    onPress={handleStartVerification}
-                    activeOpacity={0.8}
-                >
-                    <Text style={styles.startButtonText}>Start Verification</Text>
-                </TouchableOpacity>
-            </View>
+            </CustomScroll>
         </SafeAreaView>
     );
 }
@@ -176,6 +191,7 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         alignItems: 'center',
         marginBottom: 24,
+        marginTop: 20
     },
     startButtonText: {
         color: '#fff',

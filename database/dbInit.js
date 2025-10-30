@@ -1,12 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
+import { DateTime } from 'luxon';
 import 'react-native-url-polyfill/auto';
-import { getPublicUrl } from '../utils/apiRequests/requestApi';
+import { getPublicUrl, getPublicUrls } from '../utils/apiRequests/requestApi';
 import { getNotificationToken } from '../utils/notifications/useNotificationHandler';
+import { convertToTimezone, timezones } from '../utils/utils';
 
 
 const SUPABASE_URL = 'https://nknoqpcyjcxpoirzizgz.supabase.co'
 export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbm9xcGN5amN4cG9pcnppemd6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE0NTExNjksImV4cCI6MjA2NzAyNzE2OX0.JmzTn1FOMmplRIiUrQoau0UU5biVVrbQtl0qWoRveI8'
+
 
 // Secure storage adapter for Expo
 const ExpoSecureStoreAdapter = {
@@ -26,10 +29,11 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   },
 });
 
-const updateNotificationToken = async ({ userId, usertype }) => {
+
+const updateNotificationToken = async ({ userId }) => {
   console.log("Updating token")
 
-  const tableName = usertype === 'flex' ? 'flex_profiles' : 'flexr_profiles'
+  const tableName = 'user_profiles'
 
   const { notification_token } = await getNotificationToken()
 
@@ -42,7 +46,7 @@ const updateNotificationToken = async ({ userId, usertype }) => {
       .single()
 
     if (notificationTokenUpdateError) {
-      console.log(error)
+      console.log(notificationTokenUpdateError)
     }
   }
 
@@ -51,7 +55,7 @@ const updateNotificationToken = async ({ userId, usertype }) => {
 
 
 export async function createOrUpdateOtp({ email }) {
-  
+
   // 1. Generate 6-digit OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -62,6 +66,10 @@ export async function createOrUpdateOtp({ email }) {
       {
         email,
         code: otp,
+        expires_at: convertToTimezone({
+          isoString: DateTime.now().setZone(timezones.UTC).plus({ minutes: 10 }).toISO(),
+          targetZone: timezones.UTC
+        })
       },
       { onConflict: ['email'] }
     );
@@ -75,6 +83,7 @@ export async function createOrUpdateOtp({ email }) {
   return { token: otp };
 }
 
+
 export async function logout() {
   const { error } = await supabase.auth.signOut();
   if (error) {
@@ -82,9 +91,10 @@ export async function logout() {
   }
 }
 
-export async function login({ email, password, usertype }) {
 
-  const tableName = usertype === 'flex' ? 'flex_profiles' : 'flexr_profiles'
+export async function login({ email, password }) {
+
+  const tableName = 'user_profiles'
 
   // Step 1: Authenticate
   const { data: authData, error: loginError } = await supabase.auth.signInWithPassword({
@@ -113,11 +123,10 @@ export async function login({ email, password, usertype }) {
     return { error: { message: 'Invalid credentials' } };
   }
 
-  const { publicUrl } = await getPublicUrl({ filePath: profile?.profile_img, bucket_name: 'user_profiles' })
+  const _profile = { ...profile }
 
-  const _profile = {
-    ...profile,
-    profile_img: publicUrl
+  if (_profile?.profile_imgs) {
+    //handle getting public signed urls here
   }
 
   const { data: userData, error: userDataError } = await fetchUserData({ id: userId })
@@ -137,6 +146,9 @@ export async function login({ email, password, usertype }) {
 }
 
 export async function automaticLogin() {
+
+  const profileTableName = 'user_profiles'
+
   try {
     // 1. Get session from SecureStore
     const {
@@ -156,7 +168,7 @@ export async function automaticLogin() {
 
     // 2. Fetch profile
     const { data: profile, error: profileError } = await supabase
-      .from('user_profiles')
+      .from(profileTableName)
       .select('*')
       .eq('id', userId)
       .single();
@@ -172,11 +184,16 @@ export async function automaticLogin() {
       throw new Error()
     }
 
-    const { publicUrl } = await getPublicUrl({ filePath: profile?.profile_img, bucket_name: 'user_profiles' })
+    const _profile = { ...profile }
 
-    const _profile = {
-      ...profile,
-      profile_img: publicUrl
+    if (_profile?.profile_imgs) {
+      //handle getting public signed urls here
+      const { urls } = await getPublicUrls({
+        filePaths: _profile?.profile_imgs,
+        bucket_name: 'user_profiles'
+      })
+
+      _profile['image_urls'] = urls
     }
 
     return {
@@ -193,9 +210,105 @@ export async function automaticLogin() {
 }
 
 const fetchUserData = async ({ id }) => {
+
+  const { phoneData, phoneError } = await supabase
+    .from('unique_phones')
+    .select("*")
+    .eq("id", id)
+    .single()
+
+  const { data: flexrRequests, error: flexrRequestsError } = await supabase
+    .from('flexr_requests')
+    .select(`
+      *,
+      events (
+        *,
+        hostInfo: flexr_id ( * )
+      )
+    `)
+    .eq("flex_id", id)
+
+  if (phoneError || flexrRequestsError) {
+    console.log('phoneError', phoneError)
+    console.log('flexrRequestsError', flexrRequestsError)
+    throw new Error()
+  }
+
+  const enrichedFlexrRequests = await Promise.all(
+    flexrRequests.map(async (r) => {
+
+      const { events } = r
+
+      const { hostInfo, cover_img } = events
+
+      const { publicUrl: eventCover } = await getPublicUrl({
+        filePath: cover_img,
+        bucket_name: 'events',
+      });
+
+      const { publicUrl: hostInfoProfileUrl } = await getPublicUrl({
+        filePath: hostInfo?.profile_imgs?.[0],
+        bucket_name: 'user_profiles',
+      });
+
+      return {
+        ...r,
+        events: {
+          ...events,
+          image_url: eventCover,
+          hostInfo: {
+            ...hostInfo,
+            image_url: hostInfoProfileUrl
+          }
+        },
+      };
+    })
+  );
+
+
   return {
-    data: { },
+    data: {
+      phoneData,
+      flexrRequests: enrichedFlexrRequests
+    },
     error: null
+  }
+}
+
+export const phoneNumberInUse = async ({ country_code, phone_number }) => {
+  try {
+
+    const { data, error } = await supabase
+      .from("unique_phones")
+      .select("*")
+      .eq('country_code', country_code)
+      .eq('phone_number', phone_number)
+
+    if (error) {
+      console.log(error)
+      throw new Error()
+    }
+
+    if (data?.length === 0) {
+      return {
+        exists: false,
+        error: null
+      }
+    }
+
+    return {
+      exists: true,
+      error: null
+    }
+
+
+  } catch (error) {
+    console.log(error)
+
+    return {
+      exists: null,
+      error
+    }
   }
 }
 

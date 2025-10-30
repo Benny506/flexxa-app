@@ -1,0 +1,1 @@
+export const eventStatuses = ['new', 'attending', 'attended', 'ongoing', 'unattended', ]

@@ -1,4 +1,4 @@
-import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 export default function ActionButtons({
   btn1,
@@ -10,21 +10,28 @@ export default function ActionButtons({
 }) {
   return (
     <View style={styles.bottomBar}>
-      <TouchableOpacity
-        style={[styles.clockOutButton, disableBtn1 && styles.disabled]}
-        onPress={onBtn1Press}
-        disabled={disableBtn1}
-      >
-        <Text style={styles.clockOutButtonText}>{btn1}</Text>
-      </TouchableOpacity>
+      {
+        btn1 &&
+        <TouchableOpacity
+          style={[styles.clockOutButton, disableBtn1 && styles.disabled]}
+          onPress={onBtn1Press}
+          disabled={disableBtn1}
+        >
+          <Text style={styles.clockOutButtonText}>{btn1}</Text>
+        </TouchableOpacity>
+      }
 
-      <TouchableOpacity
-        style={[styles.clockInButton, disableBtn2 && styles.disabled]}
-        onPress={onBtn2Press}
-        disabled={disableBtn2}
-      >
-        <Text style={styles.clockInButtonText}>{btn2}</Text>
-      </TouchableOpacity>
+      {
+        btn2
+        &&
+        <TouchableOpacity
+          style={[styles.clockInButton, disableBtn2 && styles.disabled]}
+          onPress={onBtn2Press}
+          disabled={disableBtn2}
+        >
+          <Text style={styles.clockInButtonText}>{btn2}</Text>
+        </TouchableOpacity>
+      }
     </View>
   );
 }
