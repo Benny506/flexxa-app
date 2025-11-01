@@ -9,4 +9,13 @@ const colors = {
 }
 
 
+export const flexColors = {
+    defaultDark: '#13BEBB'
+}
+
+export const flexrColors = {
+    defaultDark: '#CB297E'
+}
+
+
 export default colors

@@ -2,10 +2,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import AppLoading from '../components/loaders/AppLoading';
 import { automaticLogin } from '../database/dbInit';
-import { setUserDetails } from '../redux/slices/userDetailsSlice';
+import { setColorScheme } from '../redux/slices/colorSchemeSlice';
+import { getUserDetailsState, setUserDetails } from '../redux/slices/userDetailsSlice';
 
 const ONBOARDING_KEY = 'hasSeenOnboarding';
 
@@ -13,6 +14,8 @@ export default function Index() {
   const dispatch = useDispatch()
 
   const router = useRouter();
+
+  const profile = useSelector(state => getUserDetailsState(state).profile)
 
   useEffect(() => {
     const init = async () => {
@@ -42,8 +45,14 @@ export default function Index() {
     init();
   }, []);
 
+  useEffect(() => {
+    if(!profile?.usertype) return;
+
+    dispatch(setColorScheme({ usertype: profile?.usertype }))
+  }, [profile])
+
   const checkOnboarding = async ({ profileFinished }) => {
-    console.log(profileFinished)
+
     const seen = await AsyncStorage.getItem(ONBOARDING_KEY);
 
     if (seen === 'true') {

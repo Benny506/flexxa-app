@@ -1,20 +1,20 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import { useEffect, useRef, useState } from 'react';
 import {
-    View,
-    Text,
-    StyleSheet,
+    Image,
+    KeyboardAvoidingView,
+    Platform,
     Pressable,
     SafeAreaView,
     StatusBar,
+    StyleSheet,
+    Text,
     TextInput,
-    KeyboardAvoidingView,
-    Platform,
-    Image,
+    View,
 } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import { Video } from 'expo-av';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+// import { Video } from 'expo-av';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 const CameraScreen = () => {
     const router = useRouter();
@@ -141,12 +141,13 @@ const CameraScreen = () => {
                     {mediaType === 'photo' ? (
                         <Image source={{ uri: capturedMedia }} style={styles.previewImage} />
                     ) : (
-                        <Video
-                            source={{ uri: capturedMedia }}
-                            style={styles.previewVideo}
-                            useNativeControls
-                            resizeMode="contain"
-                        />
+                        <></>
+                        // <Video
+                        //     source={{ uri: capturedMedia }}
+                        //     style={styles.previewVideo}
+                        //     useNativeControls
+                        //     resizeMode="contain"
+                        // />
                     )}
                 </View>
 

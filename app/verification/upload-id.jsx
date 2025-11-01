@@ -467,13 +467,16 @@ const styles = StyleSheet.create({
         color: '#484ED4',
         fontSize: 15,
         fontWeight: '600',
+        textAlign: 'center'
     },
     modalButtonPrimary: {
         flex: 1,
         backgroundColor: '#484ED4',
         borderRadius: 12,
-        paddingVertical: 14,
+        // paddingVertical: 14,
+        justifyContent: 'center',
         alignItems: 'center',
+        textAlign: 'center'
     },
     modalButtonPrimaryText: {
         color: '#fff',

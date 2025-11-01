@@ -228,6 +228,8 @@ const fetchUserData = async ({ id }) => {
     `)
     .eq("flex_id", id)
 
+  console.log(flexrRequests[0])
+
   if (phoneError || flexrRequestsError) {
     console.log('phoneError', phoneError)
     console.log('flexrRequestsError', flexrRequestsError)

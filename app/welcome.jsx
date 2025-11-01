@@ -1,5 +1,5 @@
-import { View, Image, Text, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { PrimaryButton, SecondaryButton } from '../components/onboarding/welcomeButtons';
 import { setOnboardingComplete } from '../utils/storage';
