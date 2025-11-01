@@ -1,7 +1,7 @@
-import { TouchableOpacity, Text, StyleSheet, Dimensions } from 'react-native';
-import { Stack, useRouter, usePathname } from 'expo-router';
-import { GestureHandlerRootView, GestureDetector, Gesture } from 'react-native-gesture-handler';
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { Stack, usePathname, useRouter } from 'expo-router';
+import { Dimensions, StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 import AppAlert from '../components/appAlert/AppAlert';

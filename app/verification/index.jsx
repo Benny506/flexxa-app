@@ -24,7 +24,6 @@ export default function VerificationIndexScreen() {
     const handleStartVerification = () => {
         router.push({
             pathname: '/verification/upload-id',
-            params
         });
     };
 

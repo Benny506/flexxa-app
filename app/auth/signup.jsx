@@ -378,11 +378,11 @@ export default function SignUpScreen() {
                                 </TouchableOpacity>
 
                                 {/* Divider */}
-                                <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 20 }}>
+                                {/* <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 20 }}>
                                     <View style={{ flex: 1, height: 1, backgroundColor: '#7E7E7E33' }}></View>
                                     <Text style={{ marginHorizontal: 10, color: "#7E7E7E80" }}>Sign in with google</Text>
                                     <View style={{ flex: 1, height: 1, backgroundColor: '#7E7E7E33' }}></View>
-                                </View>
+                                </View> */}
 
                                 {/* Google Sign Up Button */}
                                 {/* <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignUp}>
