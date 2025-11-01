@@ -59,6 +59,14 @@
           "cameraPermission": "Flexxa needs access to your camera to let you take profile pictures."
         }
       ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Flexxa to access your camera",
+          "microphonePermission": "Allow Flexxa to access your microphone",
+          "recordAudioAndroid": true
+        }
+      ],
       "expo-secure-store"
     ],
     "experiments": {
