@@ -64,16 +64,21 @@ const styles = StyleSheet.create({
   },
   notificationButton: {
     position: 'relative',
-    padding: 4,
+    backgroundColor: 'rgb(251,245,249)',
+    padding: 8,
+    borderRadius: 8,
   },
   notificationBadge: {
     position: 'absolute',
-    top: 2,
-    right: 2,
-    backgroundColor: '#5B5BFF',
+    top: 0,
+    right: 0,
+    width: 8,
+    height: 18,
+    // borderRadius: 4,
+    backgroundColor: '#484ed4',
     borderRadius: 9,
     minWidth: 18,
-    height: 18,
+    // height: 18,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 4,
@@ -95,23 +100,25 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   tabText: {
-    fontSize: 15,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: '400',
     color: '#999',
   },
   activeTabText: {
-    color: '#000',
-    fontWeight: '600',
+    color: '#484ed4',
+    // fontWeight: '600',
+    marginBottom: 4
   },
   activeIndicator: {
-    position: 'absolute',
-    bottom: -1,
-    left: 0,
-    right: 24,
-    height: 3,
-    backgroundColor: '#5B5BFF',
-    borderRadius: 2,
-  },
+  position: 'absolute',
+  bottom: 1,
+  left: '25%',
+  width: '50%',
+  height: 6,
+  backgroundColor: '#484ed4',
+  borderRadius: 6,
+}
+
 });
 
 export default CommunityHeader;

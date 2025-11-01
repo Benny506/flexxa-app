@@ -14,6 +14,7 @@ import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import ReusableModal from '../../../components/ReusableModal';
+import AppLoading from '../../../components/loaders/AppLoading';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const CreateGroupScreen = () => {
@@ -100,16 +101,18 @@ const CreateGroupScreen = () => {
         {/* Group Image */}
         <View style={styles.section}>
           <Text style={styles.label}>Group image</Text>
-          <Pressable style={styles.imageUpload} onPress={pickImage}>
-            {groupImage ? (
-              <Image source={{ uri: groupImage }} style={styles.uploadedImage} />
-            ) : (
-              <>
-                <Ionicons name="image-outline" size={40} color="#999" />
-                <Text style={styles.uploadText}>+ Add Photo</Text>
-              </>
-            )}
-          </Pressable>
+          <View style={{ justifyContent: 'center', alignItems: 'center' }}>
+            <Pressable style={styles.imageUpload} onPress={pickImage}>
+              {groupImage ? (
+                <Image source={{ uri: groupImage }} style={styles.uploadedImage} />
+              ) : (
+                <>
+                  <Ionicons name="image-outline" size={40} color="#999" />
+                  <Text style={styles.uploadText}>+ Add Photo</Text>
+                </>
+              )}
+            </Pressable>
+          </View>
         </View>
 
         {/* Group Name */}
@@ -141,7 +144,7 @@ const CreateGroupScreen = () => {
         {/* Group Type */}
         <View style={styles.section}>
           <Text style={styles.label}>Group type</Text>
-          
+
           <Pressable
             style={[styles.typeOption, groupType === 'public' && styles.typeOptionSelected]}
             onPress={() => setGroupType('public')}
@@ -188,21 +191,23 @@ const CreateGroupScreen = () => {
       </View>
 
       {/* Creating Modal */}
-      <ReusableModal
+      {/* <ReusableModal
         visible={isCreating}
         icon="logo-buffer"
         iconColor="#5B5BFF"
         iconBgColor="#E8E8FF"
         title="Creating group..."
-      />
+      /> */}
+
+      <AppLoading tempLoading={isCreating} loadingText="Creating group..." />
 
       {/* Success Modal */}
       <ReusableModal
         visible={showSuccessModal}
         onClose={() => setShowSuccessModal(false)}
-        icon="checkmark-circle"
-        iconColor="#4CAF50"
-        iconBgColor="#E8F5E9"
+        // icon="checkmark-circle"
+        // iconColor="#4CAF50"
+        iconBgColor="#faeaf2"
         title="Your Group Has Been Created!"
         message={`You've successfully created the group ${groupName}. Start sharing updates and inviting others to join the conversation`}
         primaryButton={{
@@ -219,14 +224,18 @@ const CreateGroupScreen = () => {
       <ReusableModal
         visible={showInviteModal}
         onClose={handleInvitesSent}
-        icon="mail"
-        iconColor="#5B5BFF"
-        iconBgColor="#E8E8FF"
+        iconBgColor="#faeaf2"
         title="Invite Notification Sent!"
         message="Your group invite has been sent to other Flexes on the app. Sit tight and watch your group grow as others join in."
         primaryButton={{
           text: 'Go to Group',
           onPress: handleInvitesSent,
+          backgroundColor: 'transparent',
+          textColor: '#484ED4',
+          style: {
+            borderWidth: 1,
+            borderColor: '#484ED4',
+          },
         }}
       />
     </SafeAreaView>

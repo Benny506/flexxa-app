@@ -90,15 +90,17 @@ const HubScreen = () => {
           <FlatList
             data={DUMMY_POSTS}
             keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
+            renderItem={({ item, index }) => (
               <PostCard
                 post={item}
                 onPress={() => handlePostPress(item.id)}
+                isFirst={index === 0}
+                isLast={index === DUMMY_POSTS.length - 1}
               />
             )}
             scrollEnabled={true}
             contentContainerStyle={styles.feedContainer}
-            ListFooterComponent={<View style={{ height: 100 }} />}
+            // ListFooterComponent={<View style={{ height: 100 }} />}
             showsVerticalScrollIndicator={false}
           />
           <CreatePostButton />
@@ -123,7 +125,7 @@ const HubScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#ffffff',
   },
   feedContainer: {
     backgroundColor: '#f7f7f7',
