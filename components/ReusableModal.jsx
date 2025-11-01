@@ -8,7 +8,7 @@ export default function ReusableModal({
   title,
   message,
   icon,
-  iconColor,
+  iconColor = '#000',
   iconBgColor,
   primaryButton,
   secondaryButton,
@@ -32,20 +32,20 @@ export default function ReusableModal({
             </TouchableOpacity>
           )}
 
-          {icon && (
-            <View style={[styles.iconContainer, { backgroundColor: iconBgColor }]}>
-              {
+          {(icon || iconBgColor) && (
+            <View style={[styles.iconContainer, { backgroundColor: iconBgColor || '#F5F5F5' }]}>
+              {icon && (
                 typeof icon === 'object'
-                ?
-                icon
-                :
-                <Ionicons name={icon} size={48} color={iconColor} />
-              }
+                  ?
+                  icon
+                  :
+                  <Ionicons name={icon} size={48} color={iconColor} />
+              )}
             </View>
           )}
 
           {title && <Text style={styles.modalTitle}>{title}</Text>}
-          
+
           {message && <Text style={styles.modalMessage}>{message}</Text>}
 
           {children}
@@ -53,10 +53,20 @@ export default function ReusableModal({
           <View style={styles.buttonContainer}>
             {secondaryButton && (
               <TouchableOpacity
-                style={[styles.button, styles.secondaryButton]}
+                style={[
+                  styles.button,
+                  styles.secondaryButton,
+                  secondaryButton.backgroundColor && { backgroundColor: secondaryButton.backgroundColor },
+                  secondaryButton.borderColor && { borderColor: secondaryButton.borderColor },
+                  secondaryButton.style,
+                ]}
                 onPress={secondaryButton.onPress}
               >
-                <Text style={styles.secondaryButtonText}>
+                <Text style={[
+                  styles.secondaryButtonText,
+                  secondaryButton.textColor && { color: secondaryButton.textColor },
+                  secondaryButton.textStyle,
+                ]}>
                   {secondaryButton.text}
                 </Text>
               </TouchableOpacity>
@@ -68,10 +78,16 @@ export default function ReusableModal({
                   styles.button,
                   styles.primaryButton,
                   !secondaryButton && styles.fullWidthButton,
+                  primaryButton.backgroundColor && { backgroundColor: primaryButton.backgroundColor },
+                  primaryButton.style,
                 ]}
                 onPress={primaryButton.onPress}
               >
-                <Text style={styles.primaryButtonText}>
+                <Text style={[
+                  styles.primaryButtonText,
+                  primaryButton.textColor && { color: primaryButton.textColor },
+                  primaryButton.textStyle,
+                ]}>
                   {primaryButton.text}
                 </Text>
               </TouchableOpacity>

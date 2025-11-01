@@ -176,7 +176,7 @@ const GroupChatScreen = () => {
             </View>
             <View>
               <Text style={styles.groupName}>{DUMMY_GROUP.name}</Text>
-              <Pressable>
+              <Pressable onPress={() => router.push('/(main)/community/group/info')}>
                 <Text style={styles.viewInfo}>View info</Text>
               </Pressable>
             </View>

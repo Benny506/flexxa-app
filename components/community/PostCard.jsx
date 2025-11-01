@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, Pressable, ScrollView, Dimensions } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-const { width } = Dimensions.get('window');
-const IMAGE_WIDTH = width - 32; // Account for padding
+const PostCard = ({ post, onPress, isLast = false, isFirst = false }) => {
+  // Safety check for undefined post
+  if (!post) {
+    return null;
+  }
 
-const PostCard = ({ post, onPress }) => {
   const [liked, setLiked] = useState(false);
   const [localLikes, setLocalLikes] = useState(post.likes);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   const handleLike = (e) => {
     e.stopPropagation();
@@ -21,100 +22,94 @@ const PostCard = ({ post, onPress }) => {
   };
 
   return (
-    <Pressable style={styles.container} onPress={onPress}>
-      {/* User Info */}
-      <View style={styles.userSection}>
-        <Image source={{ uri: post.user.avatar }} style={styles.avatar} />
-        <View style={styles.userInfo}>
-          <Text style={styles.userName}>{post.user.name}</Text>
-          <Text style={styles.userHandle}>{post.user.handle}</Text>
+    <Pressable style={[styles.container, isFirst && styles.firstCard]} onPress={onPress}>
+      <View style={styles.threadContainer}>
+        {/* Avatar with Thread Line */}
+        <View style={styles.avatarContainer}>
+          <Image source={{ uri: post.user.avatar }} style={styles.avatar} />
+          {!isLast && <View style={styles.threadLine} />}
         </View>
-        <Text style={styles.time}>{post.time}</Text>
-      </View>
 
-      {/* Post Text */}
-      <Text style={styles.postText}>{post.text}</Text>
+        {/* Content Container */}
+        <View style={styles.contentContainer}>
+          {/* User Info */}
+          <View style={styles.userSection}>
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>{post.user.name}</Text>
+              <Text style={styles.time}> {post.time}</Text>
+            </View>
+          </View>
 
-      {/* Media Carousel */}
-      {post.media && post.media.length > 0 && (
-        <View style={styles.mediaContainer}>
-          <ScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            scrollEventThrottle={16}
-            onMomentumScrollEnd={(event) => {
-              const slideIndex = Math.round(
-                event.nativeEvent.contentOffset.x / IMAGE_WIDTH
-              );
-              setCurrentImageIndex(slideIndex);
-            }}
-          >
-            {post.media.map((imageUri, index) => (
-              <Image
-                key={index}
-                source={{ uri: imageUri }}
-                style={styles.mediaImage}
-                resizeMode="cover"
-              />
-            ))}
-          </ScrollView>
-          {post.media.length > 1 && (
-            <View style={styles.dotsContainer}>
-              {post.media.map((_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.dot,
-                    index === currentImageIndex && styles.activeDot,
-                  ]}
+          <Text style={styles.userHandle}>{post.user.handle}</Text>
+
+          {/* Post Text */}
+          <Text style={styles.postText}>{post.text}</Text>
+
+          {/* Media Grid */}
+          {post.media && post.media.length > 0 && (
+            <View style={styles.mediaContainer}>
+              {post.media.length === 1 ? (
+                <Image
+                  source={{ uri: post.media[0] }}
+                  style={styles.singleImage}
+                  resizeMode="cover"
                 />
-              ))}
+              ) : (
+                <View style={styles.mediaGrid}>
+                  {post.media.slice(0, 4).map((imageUri, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        styles.gridImageContainer,
+                        post.media.length === 2 && styles.twoImages,
+                        post.media.length === 3 && index === 0 && styles.threeImagesFirst,
+                        post.media.length === 3 && index > 0 && styles.threeImagesOther,
+                        post.media.length === 4 && styles.fourImages,
+                      ]}
+                    >
+                      <Image
+                        source={{ uri: imageUri }}
+                        style={styles.gridImage}
+                        resizeMode="cover"
+                      />
+                      {index === 3 && post.media.length > 4 && (
+                        <View style={styles.moreOverlay}>
+                          <Text style={styles.moreText}>+{post.media.length - 4}</Text>
+                        </View>
+                      )}
+                    </View>
+                  ))}
+                </View>
+              )}
             </View>
           )}
-        </View>
-      )}
 
-      {/* Engagement Stats */}
-      {/* <View style={styles.statsContainer}>
-        <View style={styles.statItem}>
-          <MaterialCommunityIcons name="heart" size={17} color="#E84C5B" />
-          <Text style={styles.statText}>{localLikes}</Text>
+          {/* Action Buttons */}
+          <View style={styles.actionsContainer}>
+            <Pressable 
+              style={styles.actionButton} 
+              onPress={handleLike}
+            >
+              <Ionicons
+                name={liked ? 'heart' : 'heart-outline'}
+                size={20}
+                color={liked ? '#E84C5B' : '#ccc'}
+              />
+            </Pressable>
+            <Pressable 
+              style={styles.actionButton}
+              onPress={handleActionPress}
+            >
+              <Ionicons name="chatbubble-outline" size={18} color="#ccc" />
+            </Pressable>
+            <Pressable 
+              style={styles.actionButton}
+              onPress={handleActionPress}
+            >
+              <Ionicons name="eye-outline" size={20} color="#ccc" />
+            </Pressable>
+          </View>
         </View>
-        <View style={styles.statItem}>
-          <MaterialCommunityIcons name="message" size={17} color="#9B7AEA" />
-          <Text style={styles.statText}>{post.comments}</Text>
-        </View>
-        <View style={styles.statItem}>
-          <Ionicons name="eye" size={17} color="#999" />
-          <Text style={styles.statText}>{post.views}</Text>
-        </View>
-      </View> */}
-
-      {/* Action Buttons */}
-      <View style={styles.actionsContainer}>
-        <Pressable 
-          style={styles.actionButton} 
-          onPress={handleLike}
-        >
-          <Ionicons
-            name={liked ? 'heart' : 'heart-outline'}
-            size={22}
-            color={liked ? '#E84C5B' : '#999'}
-          />
-        </Pressable>
-        <Pressable 
-          style={styles.actionButton}
-          onPress={handleActionPress}
-        >
-          <Ionicons name="chatbubble-outline" size={20} color="#999" />
-        </Pressable>
-        <Pressable 
-          style={styles.actionButton}
-          onPress={handleActionPress}
-        >
-          <Ionicons name="eye-outline" size={22} color="#999" />
-        </Pressable>
       </View>
     </Pressable>
   );
@@ -123,104 +118,131 @@ const PostCard = ({ post, onPress }) => {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#fff',
-    paddingTop: 16,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    marginBottom: 8,
+    paddingHorizontal: 14,
+    // paddingBottom: 8,
   },
-  userSection: {
+  firstCard: {
+    paddingTop: 16,
+  },
+  threadContainer: {
     flexDirection: 'row',
+  },
+  avatarContainer: {
     alignItems: 'center',
-    marginBottom: 12,
+    marginRight: 10,
   },
   avatar: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    marginRight: 12,
+  },
+  threadLine: {
+    width: 0.5,
+    flex: 1,
+    backgroundColor: '#e0e0e0',
+    marginTop: 8,
+  },
+  contentContainer: {
+    flex: 1,
+    paddingBottom: 12,
+  },
+  userSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 2,
   },
   userInfo: {
-    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   userName: {
     fontSize: 15,
     fontWeight: '600',
     color: '#000',
   },
-  userHandle: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 2,
-  },
   time: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#999',
+  },
+  userHandle: {
+    fontSize: 13,
+    color: '#999',
+    marginBottom: 8,
   },
   postText: {
-    fontSize: 14,
+    fontSize: 16,
     lineHeight: 20,
-    color: '#333',
+    color: '#a1a1a1',
     marginBottom: 12,
   },
   mediaContainer: {
-    position: 'relative',
     marginBottom: 12,
     borderRadius: 12,
     overflow: 'hidden',
+    width: '100%',
   },
-  mediaImage: {
-    width: IMAGE_WIDTH,
-    height: 240,
+  singleImage: {
+    width: '100%',
+    height: 280,
+    borderRadius: 12,
   },
-  dotsContainer: {
+  mediaGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 2,
+    borderRadius: 12,
+  },
+  gridImageContainer: {
+    position: 'relative',
+    overflow: 'hidden',
+    borderRadius: 8,
+  },
+  twoImages: {
+    width: '49.5%',
+    height: 200,
+  },
+  threeImagesFirst: {
+    width: '100%',
+    height: 200,
+    marginBottom: 2,
+  },
+  threeImagesOther: {
+    width: '49.5%',
+    height: 150,
+  },
+  fourImages: {
+    width: '49.5%',
+    height: 150,
+  },
+  gridImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+  },
+  moreOverlay: {
     position: 'absolute',
-    bottom: 10,
+    top: 0,
     left: 0,
     right: 0,
-    flexDirection: 'row',
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    marginHorizontal: 3,
-  },
-  activeDot: {
-    backgroundColor: '#fff',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    marginBottom: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  statItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 20,
-  },
-  statText: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#666',
-    marginLeft: 6,
+  moreText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '700',
   },
   actionsContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
+    alignItems: 'center',
+    gap: 24,
   },
   actionButton: {
-    paddingVertical: 8,
-    paddingRight: 24,
+    paddingVertical: 4,
   },
 });
 
