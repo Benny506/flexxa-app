@@ -1,19 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Modal, StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
 
 export default function ReusableModal({
   visible,
   onClose,
-  title,
-  message,
+  image,
   icon,
   iconColor = '#000',
   iconBgColor,
+  title,
+  message,
+  children,
   primaryButton,
   secondaryButton,
-  children,
+  hideFooter = false,
   showCloseButton = false,
+  styles = {}, // Custom styles object
 }) {
   return (
     <Modal
@@ -22,75 +25,113 @@ export default function ReusableModal({
       animationType="fade"
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
+      <View style={[defaultStyles.overlay, styles.overlay]}>
         <BlurView intensity={100} tint="dark" style={StyleSheet.absoluteFill} />
 
-        <View style={styles.modalContainer}>
-          {showCloseButton && (
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Ionicons name="close" size={24} color="#999" />
-            </TouchableOpacity>
-          )}
-
-          {(icon || iconBgColor) && (
-            <View style={[styles.iconContainer, { backgroundColor: iconBgColor || '#F5F5F5' }]}>
-              {icon && (
-                typeof icon === 'object'
-                  ?
-                  icon
-                  :
-                  <Ionicons name={icon} size={48} color={iconColor} />
-              )}
-            </View>
-          )}
-
-          {title && <Text style={styles.modalTitle}>{title}</Text>}
-
-          {message && <Text style={styles.modalMessage}>{message}</Text>}
-
-          {children}
-
-          <View style={styles.buttonContainer}>
-            {secondaryButton && (
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  styles.secondaryButton,
-                  secondaryButton.backgroundColor && { backgroundColor: secondaryButton.backgroundColor },
-                  secondaryButton.borderColor && { borderColor: secondaryButton.borderColor },
-                  secondaryButton.style,
-                ]}
-                onPress={secondaryButton.onPress}
-              >
-                <Text style={[
-                  styles.secondaryButtonText,
-                  secondaryButton.textColor && { color: secondaryButton.textColor },
-                  secondaryButton.textStyle,
-                ]}>
-                  {secondaryButton.text}
-                </Text>
-              </TouchableOpacity>
+        <View style={[defaultStyles.wrapper, styles.wrapper]}>
+          <View style={[defaultStyles.modalContainer, styles.modalContainer]}>
+            {/* Close Button */}
+            {showCloseButton && onClose && (
+              <View style={[defaultStyles.closeButtonWrapper, styles.closeButtonWrapper]}>
+                <TouchableOpacity 
+                  style={[defaultStyles.closeButton, styles.closeButton]} 
+                  onPress={onClose}
+                >
+                  <Ionicons name="close" size={24} color="#999" />
+                </TouchableOpacity>
+              </View>
             )}
 
-            {primaryButton && (
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  styles.primaryButton,
-                  !secondaryButton && styles.fullWidthButton,
-                  primaryButton.backgroundColor && { backgroundColor: primaryButton.backgroundColor },
-                  primaryButton.style,
-                ]}
-                onPress={primaryButton.onPress}
-              >
-                <Text style={[
-                  styles.primaryButtonText,
-                  primaryButton.textColor && { color: primaryButton.textColor },
-                  primaryButton.textStyle,
-                ]}>
-                  {primaryButton.text}
-                </Text>
-              </TouchableOpacity>
+            {/* Image */}
+            {image && (
+              <View style={[defaultStyles.imageWrapper, styles.imageWrapper]}>
+                <Image
+                  source={typeof image === 'string' ? { uri: image } : image}
+                  style={[defaultStyles.image, styles.image]}
+                />
+              </View>
+            )}
+
+            {/* Icon */}
+            {(icon || iconBgColor) && !image && (
+              <View style={[
+                defaultStyles.iconContainer, 
+                { backgroundColor: iconBgColor || '#F5F5F5' },
+                styles.iconContainer
+              ]}>
+                {icon && (
+                  typeof icon === 'object'
+                    ? icon
+                    : <Ionicons name={icon} size={48} color={iconColor} />
+                )}
+              </View>
+            )}
+
+            {/* Title */}
+            {title && (
+              <Text style={[defaultStyles.title, styles.title]}>
+                {title}
+              </Text>
+            )}
+
+            {/* Message/Description */}
+            {message && (
+              <Text style={[defaultStyles.message, styles.message]}>
+                {message}
+              </Text>
+            )}
+
+            {/* Body (Children Content) */}
+            {children && (
+              <View style={[defaultStyles.body, styles.body]}>
+                {children}
+              </View>
+            )}
+
+            {/* Footer Buttons */}
+            {!hideFooter && (primaryButton || secondaryButton) && (
+              <View style={[defaultStyles.footer, styles.footer]}>
+                {secondaryButton && (
+                  <TouchableOpacity
+                    style={[
+                      defaultStyles.button,
+                      defaultStyles.secondaryButton,
+                      secondaryButton.style,
+                      styles.secondaryButton,
+                    ]}
+                    onPress={secondaryButton.onPress}
+                  >
+                    <Text style={[
+                      defaultStyles.secondaryButtonText,
+                      secondaryButton.textStyle,
+                      styles.secondaryButtonText,
+                    ]}>
+                      {secondaryButton.text}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+
+                {primaryButton && (
+                  <TouchableOpacity
+                    style={[
+                      defaultStyles.button,
+                      defaultStyles.primaryButton,
+                      !secondaryButton && defaultStyles.fullWidthButton,
+                      primaryButton.style,
+                      styles.primaryButton,
+                    ]}
+                    onPress={primaryButton.onPress}
+                  >
+                    <Text style={[
+                      defaultStyles.primaryButtonText,
+                      primaryButton.textStyle,
+                      styles.primaryButtonText,
+                    ]}>
+                      {primaryButton.text}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             )}
           </View>
         </View>
@@ -99,26 +140,39 @@ export default function ReusableModal({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
+const defaultStyles = StyleSheet.create({
+  overlay: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+  },
+  wrapper: {
+    width: '100%',
+    maxWidth: 400,
   },
   modalContainer: {
     backgroundColor: '#FFF',
     borderRadius: 20,
     padding: 24,
     width: '100%',
-    maxWidth: 400,
     alignItems: 'center',
   },
+  closeButtonWrapper: {
+    width: '100%',
+    alignItems: 'flex-end',
+    marginBottom: 8,
+  },
   closeButton: {
-    position: 'absolute',
-    top: 16,
-    right: 16,
-    zIndex: 1,
+    padding: 4,
+  },
+  imageWrapper: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  image: {
+    width: 80,
+    height: 80,
   },
   iconContainer: {
     width: 96,
@@ -128,24 +182,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
   },
-  modalTitle: {
+  title: {
     fontSize: 20,
     fontWeight: '700',
     color: '#000',
     textAlign: 'center',
     marginBottom: 12,
   },
-  modalMessage: {
+  message: {
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
     lineHeight: 20,
     marginBottom: 24,
   },
-  buttonContainer: {
+  body: {
+    width: '100%',
+    marginTop: 16,
+  },
+  footer: {
     flexDirection: 'row',
     width: '100%',
     gap: 12,
+    marginTop: 24,
   },
   button: {
     flex: 1,
