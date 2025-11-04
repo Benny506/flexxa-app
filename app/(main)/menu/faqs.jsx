@@ -123,7 +123,7 @@ export default function FAQsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFF',
+    backgroundColor: '#ffffff',
   },
   header: {
     flexDirection: 'row',
@@ -131,9 +131,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: '#FFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   headerTitle: {
     fontSize: 18,
@@ -141,7 +138,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   content: {
-    padding: 20,
+    padding: 16,
   },
   mainTitle: {
     fontSize: 24,
@@ -156,7 +153,7 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   section: {
-    marginBottom: 28,
+    marginBottom: 22,
   },
   sectionTitle: {
     fontSize: 18,
@@ -165,10 +162,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   faqItem: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#f6f6fd',
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     marginBottom: 12,
+    paddingVertical: 18,
   },
   questionRow: {
     flexDirection: 'row',
@@ -177,13 +175,13 @@ const styles = StyleSheet.create({
   },
   question: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '600',
     color: '#000',
     marginRight: 12,
   },
   answer: {
-    fontSize: 14,
+    fontSize: 15,
     color: '#666',
     marginTop: 12,
     lineHeight: 20,

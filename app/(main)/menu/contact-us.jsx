@@ -1,4 +1,4 @@
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React from 'react';
 import {
@@ -33,15 +33,13 @@ export default function ContactUsScreen() {
         <View style={styles.content}>
           {/* Illustration Placeholder */}
           <View style={styles.illustrationContainer}>
-            <View style={styles.illustration}>
-              <Ionicons name="chatbubbles-outline" size={80} color="#484ED4" />
-            </View>
+            <View style={styles.illustration} />
           </View>
 
           {/* Main Content */}
           <Text style={styles.title}>Need Help?</Text>
           <Text style={styles.subtitle}>
-            We're here for you. Reach out anytime!
+            {"We're here for you. Reach out anytime!"}
           </Text>
 
           {/* Contact Methods */}
@@ -53,13 +51,16 @@ export default function ContactUsScreen() {
               activeOpacity={0.7}
             >
               <View style={styles.iconContainer}>
-                <Ionicons name="mail-outline" size={28} color="#484ED4" />
+                <Ionicons name="mail" size={24} color="#5B5FED" />
               </View>
               <View style={styles.contactInfo}>
                 <Text style={styles.contactLabel}>Email address</Text>
                 <Text style={styles.contactValue}>info@flexxa.com</Text>
               </View>
             </TouchableOpacity>
+
+            {/* Divider */}
+            <View style={styles.divider} />
 
             {/* Phone */}
             <TouchableOpacity
@@ -68,21 +69,13 @@ export default function ContactUsScreen() {
               activeOpacity={0.7}
             >
               <View style={styles.iconContainer}>
-                <Ionicons name="call-outline" size={28} color="#484ED4" />
+                <Ionicons name="call" size={24} color="#5B5FED" />
               </View>
               <View style={styles.contactInfo}>
                 <Text style={styles.contactLabel}>Phone number</Text>
                 <Text style={styles.contactValue}>03930930300</Text>
               </View>
             </TouchableOpacity>
-          </View>
-
-          {/* Additional Info */}
-          <View style={styles.infoBox}>
-            <Feather name="info" size={20} color="#484ED4" />
-            <Text style={styles.infoText}>
-              Our support team typically responds within 24 hours during business days.
-            </Text>
           </View>
         </View>
       </ScrollView>
@@ -102,58 +95,56 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 12,
     backgroundColor: '#FFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '500',
     color: '#000',
   },
   content: {
-    padding: 20,
+    padding: 18,
   },
   illustrationContainer: {
     alignItems: 'center',
-    marginVertical: 32,
+    marginBottom: 40,
   },
   illustration: {
-    width: 160,
-    height: 160,
-    backgroundColor: '#F0F1FF',
-    borderRadius: 80,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: '100%',
+    height: 220,
+    backgroundColor: '#f6f6fd',
+    borderRadius: 20,
   },
   title: {
-    fontSize: 28,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '500',
     color: '#000',
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
-    fontSize: 15,
-    color: '#666',
+    fontSize: 16,
+    color: '#9CA3AF',
     textAlign: 'center',
-    marginBottom: 40,
+    marginBottom: 14,
   },
   contactContainer: {
-    gap: 16,
-    marginBottom: 24,
+    gap: 0,
   },
   contactItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
-    padding: 20,
-    borderRadius: 16,
+    paddingVertical: 20,
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#F3F4F6',
+    marginLeft: 68,
   },
   iconContainer: {
     width: 56,
     height: 56,
-    backgroundColor: '#E8E9FF',
-    borderRadius: 28,
+    backgroundColor: '#f6f6fd',
+    borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 16,
@@ -162,26 +153,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   contactLabel: {
-    fontSize: 13,
-    color: '#666',
+    fontSize: 16,
+    color: '#1F2937',
     marginBottom: 4,
+    fontWeight: '500',
   },
   contactValue: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-  },
-  infoBox: {
-    flexDirection: 'row',
-    backgroundColor: '#F0F1FF',
-    padding: 16,
-    borderRadius: 12,
-    gap: 12,
-  },
-  infoText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#484ED4',
-    lineHeight: 20,
+    fontSize: 15,
+    color: '#6B7280',
   },
 });
