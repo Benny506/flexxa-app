@@ -57,7 +57,7 @@ export default function FlexrRequests() {
   ];
 
   const handleRequestPress = (requestId) => {
-    router.push(`/event-details/${requestId}`);
+    router.push(`/flexr/event-details/${requestId}`);
   };
 
   return (
@@ -114,7 +114,7 @@ export default function FlexrRequests() {
           <EventCard
             key={request.id}
             event={request} // Pass the request object directly
-            onPress={handleRequestPress}
+            onPress={() => handleRequestPress(request.id)}
           />
         ))}
 
