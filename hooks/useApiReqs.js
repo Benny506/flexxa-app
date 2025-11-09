@@ -4,7 +4,7 @@ import { setAppAlert } from "../redux/slices/appAlertSlice"
 import { appLoadStart, appLoadStop } from "../redux/slices/appLoadingSlice"
 import { getEventsState, setEvents } from "../redux/slices/eventsSlice"
 import { getUserDetailsState, setUserDetails } from "../redux/slices/userDetailsSlice"
-import { getPublicUrl } from "../utils/apiRequests/requestApi"
+import { getPublicImageUrl } from "../utils/apiRequests/requestApi"
 
 export default function useApiReqs() {
     const dispatch = useDispatch()
@@ -18,21 +18,21 @@ export default function useApiReqs() {
     const updateProfile = async ({ callBack = () => { }, update = {} }) => {
         try {
 
-            const { data, error } = await supabase
-                .from("user_profiles")
-                .upsert(
-                    {
-                        ...profile, //old
-                        ...update, //new
-                        id: user?.id
-                    },
-                    {
-                        onConflict: "id",
-                        ignoreDuplicates: false
-                    }
-                )
-                .select("*")
-                .single()
+            const { data, error } = 
+                profile?.id || user?.id
+                ?
+                    await supabase
+                        .from("user_profiles")
+                        .update(update)
+                        .eq('id', user?.id)
+                        .select("*")
+                        .single()
+                :
+                    await supabase
+                        .from("user_profiles")
+                        .insert(update)
+                        .select("*")
+                        .single()                
 
             if (error) {
                 console.log("Profile update error:", error)
@@ -81,18 +81,16 @@ export default function useApiReqs() {
                 throw new Error()
             }
 
-            const enrichedEventAttendees = await Promise.all(
-                data?.map(async attendee => {
-                    const { attendee_profile } = attendee
+            const enrichedEventAttendees = data?.map(attendee => {
+                const { attendee_profile } = attendee
 
-                    const { publicUrl } = await getPublicUrl({ filePath: attendee_profile?.profile_imgs?.[0], bucket_name: 'user_profiles' })
+                const publicUrl = getPublicImageUrl({ path: attendee_profile?.profile_imgs?.[0], bucket_name: 'user_profiles' })
 
-                    return {
-                        ...attendee,
-                        image_url: publicUrl
-                    }
-                })
-            )
+                return {
+                    ...attendee,
+                    image_url: publicUrl
+                }
+            })
 
             callBack({ attendees: enrichedEventAttendees })
 
@@ -152,7 +150,7 @@ export default function useApiReqs() {
 
             const updatedEventReqeusts = flexrRequests?.filter(req => req?.event_id !== event_id)
             const updatedEvents = events?.map(e => {
-                if(e?.id === event_id){
+                if (e?.id === event_id) {
                     const { event_attendees } = e
 
                     const attendees = (event_attendees || [])?.filter(ea => ea?.flex_id !== user?.id)
@@ -161,7 +159,7 @@ export default function useApiReqs() {
                         ...e,
                         event_attendees: attendees
                     }
-                }   
+                }
 
                 return e
             })
@@ -216,30 +214,22 @@ export default function useApiReqs() {
                 return;
             }
 
-            const enrichedEvents = await Promise.all(
-                data?.map(async ev => {
-                    const { cover_img, hostInfo } = ev
+            const enrichedEvents = data?.map(ev => {
+                const { cover_imgs, hostInfo } = ev
 
-                    const { publicUrl } = await getPublicUrl({
-                        filePath: cover_img,
-                        bucket_name: 'events',
-                    });
+                const image_urls = cover_imgs?.map((imgPath) => getPublicImageUrl({ path: imgPath, bucket_name: 'events' }))
 
-                    const { publicUrl: hostInfoProfileUrl } = await getPublicUrl({
-                        filePath: hostInfo?.profile_imgs?.[0],
-                        bucket_name: 'user_profiles',
-                    });
+                const hostInfoProfileUrl = getPublicImageUrl({ path: hostInfo?.profile_imgs?.[0], bucket_name: 'user_profiles' })
 
-                    return {
-                        ...ev,
-                        image_url: publicUrl,
-                        hostInfo: {
-                            ...hostInfo,
-                            image_url: hostInfoProfileUrl
-                        }
+                return {
+                    ...ev,
+                    image_urls,
+                    hostInfo: {
+                        ...hostInfo,
+                        image_url: hostInfoProfileUrl
                     }
-                })
-            )
+                }
+            })
 
             dispatch(setEvents({
                 events: [...events, ...enrichedEvents],

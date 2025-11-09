@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { getEventStatuses } from "../../utils/dateUtils";
 
 const userDetailsSlice = createSlice({
     name: 'userDetailsSlice',
@@ -51,7 +52,11 @@ const userDetailsSlice = createSlice({
 
             //myEvents
             if(action?.payload?.myEvents){
-                state.myEvents = action?.payload?.myEvents
+                const evts = action?.payload?.myEvents
+                
+                const { eventsWithStatus, counts } = getEventStatuses({ events: evts, currentFlexId: null })
+
+                state.myEvents = eventsWithStatus
             }
         },
 

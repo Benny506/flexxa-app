@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFonts } from 'expo-font';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -17,7 +18,16 @@ export default function Index() {
 
   const profile = useSelector(state => getUserDetailsState(state).profile)
 
+  const [fontsLoaded, fontsLoadedError] = useFonts({
+    'Lato-Bold': require('../assets/fonts/Lato-Bold.ttf'),
+    'Lato-Light': require('../assets/fonts/Lato-Light.ttf'),
+    'Lato-Regular': require('../assets/fonts/Lato-Regular.ttf'),
+    'Lato-Thin': require('../assets/fonts/Lato-Thin.ttf'),
+  });
+
   useEffect(() => {
+    if(!fontsLoaded && !fontsLoadedError) return ;
+
     const init = async () => {
       try {
         const userData = await automaticLogin();
@@ -43,10 +53,10 @@ export default function Index() {
     };
 
     init();
-  }, []);
+  }, [fontsLoaded, fontsLoadedError]);
 
   useEffect(() => {
-    if(!profile?.usertype) return;
+    if (!profile?.usertype) return;
 
     dispatch(setColorScheme({ usertype: profile?.usertype }))
   }, [profile])
@@ -58,6 +68,7 @@ export default function Index() {
     if (seen === 'true') {
       if (profileFinished) {
         goHome()
+        // goToSplash()
 
       } else {
         goToFinishProfile()

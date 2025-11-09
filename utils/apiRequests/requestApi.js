@@ -192,7 +192,7 @@ export const getPublicUrls = async ({ filePaths, bucket_name }) => {
                     return null;
                 }
 
-                return filePath;
+                return data.publicUrl;
             })
         );
 
@@ -274,3 +274,6 @@ export async function uploadAssets({ uris, bucket_name, ext, id }) {
         return { uris: null, error }
     }
 }
+
+export const getPublicImageUrl = ({ path, bucket_name }) => 
+  `https://nknoqpcyjcxpoirzizgz.supabase.co/storage/v1/object/public/${bucket_name}/${path}`;

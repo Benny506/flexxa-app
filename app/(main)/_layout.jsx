@@ -7,6 +7,7 @@ export default function MainLayout() {
       <Stack.Screen name="profile" />
       <Stack.Screen name="notifications" />
       <Stack.Screen name="event-details" />
+      <Stack.Screen name="attendees" />
     </Stack>
   );
 }

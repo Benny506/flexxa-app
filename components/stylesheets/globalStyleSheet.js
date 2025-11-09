@@ -1,4 +1,6 @@
 import { StyleSheet } from "react-native"
+import colors from "../../utils/colors/colors"
+import { hexToRgba } from "../../utils/utils"
 
 export const textSizes = StyleSheet.create({
     txt8: {
@@ -146,4 +148,20 @@ export const fontFamilies = StyleSheet.create({
     LatoThin: {
         fontFamily: 'LatoThin'
     },
+})
+
+
+export const inputStyles = StyleSheet.create({
+    input1: {
+        borderColor: hexToRgba({ hex: colors._7E7E7E, opacity: 0.2 }),
+        paddingVertical: 15,
+        paddingHorizontal: 12.5,
+        borderRadius: 10,
+        borderWidth: 1
+    },
+    input1Text: {
+        color: colors._000,
+        fontFamily: fontFamilies.LatoRegular.fontFamily,
+        fontSize: textSizes.txt14.fontSize,
+    }
 })

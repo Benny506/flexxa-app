@@ -14,6 +14,7 @@ export default function EventCard({ event, onPress }) {
 
   return (
     <TouchableOpacity
+      key={event?.id}
       style={styles.eventCard}
       onPress={() => onPress(event?.id)}
     >

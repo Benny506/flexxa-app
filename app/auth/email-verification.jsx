@@ -126,11 +126,12 @@ export default function EmailVerification() {
             }))
 
             fullNavigateTo({
-                path: '/onboarding/gender-selection',
+                // path: '/onboarding/gender-selection',
+                path: '/auth/signin',
                 params
             })
             
-            dispatch(setAppAlert({ msg: 'Accont treated! Next -> Setup your profile', type: 'success' }))
+            dispatch(setAppAlert({ msg: 'Accont treated! Next -> Login & Setup your profile', type: 'success' }))
 
             return;
             

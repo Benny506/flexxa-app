@@ -1,3 +1,4 @@
+import AntDesign from '@expo/vector-icons/AntDesign';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -14,12 +15,15 @@ import EventCard from '../../../components/EventCard'; // Use the existing Event
 import ZeroItems from '../../../components/ZeroItems';
 import useApiReqs from '../../../hooks/useApiReqs';
 import { getEventsState } from '../../../redux/slices/eventsSlice';
+import { getUserDetailsState } from '../../../redux/slices/userDetailsSlice';
+import colors from '../../../utils/colors/colors';
 
 export default function FlexrRequests() {
     const router = useRouter();
 
     const { fetchEvents } = useApiReqs()
 
+    const profile = useSelector(state => getUserDetailsState(state).profile)
     const events = useSelector(state => getEventsState(state).events)
     const eventsCount = useSelector(state => getEventsState(state).counts)
 
@@ -55,6 +59,20 @@ export default function FlexrRequests() {
 
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Events</Text>
+
+                {
+                    profile?.usertype === 'flexr'
+                    &&
+                    <TouchableOpacity
+                        onPress={() => router.push('/event-setup')}
+                        style={{
+                            padding: 12, borderRadius: 10, borderWidth: 1,
+                            borderColor: colors._484ED4
+                        }}
+                    >
+                        <AntDesign name="plus" size={24} color="black" />
+                    </TouchableOpacity>
+                }
             </View>
 
             <View style={{
@@ -87,7 +105,7 @@ export default function FlexrRequests() {
                                     >
                                         {tab}
                                     </Text>
-                                    {count && (
+                                    {(typeof count === 'number' && count > 0) && (
                                         <View style={styles.countBadge}>
                                             <Text style={styles.countText}>{count}</Text>
                                         </View>
@@ -143,6 +161,12 @@ const styles = StyleSheet.create({
     header: {
         paddingHorizontal: 16,
         paddingVertical: 16,
+        width: '100%',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: 20
     },
     headerTitle: {
         fontSize: 20,

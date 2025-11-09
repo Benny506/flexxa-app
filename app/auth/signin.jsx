@@ -42,8 +42,6 @@ export default function SignInScreen() {
     const router = useRouter();
 
     const [activeTab, setActiveTab] = useState('Flex');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
@@ -172,7 +170,7 @@ export default function SignInScreen() {
                             </Text>
 
                             {/* Tab Selector */}
-                            <View style={styles.tabContainer}>
+                            {/* <View style={styles.tabContainer}>
                                 <TouchableOpacity
                                     style={[styles.tab, activeTab === 'Flex' && styles.activeTab]}
                                     onPress={() => setActiveTab('Flex')}
@@ -189,7 +187,7 @@ export default function SignInScreen() {
                                         Flexr
                                     </Text>
                                 </TouchableOpacity>
-                            </View>
+                            </View> */}
 
                             {/* Email Input */}
                             <View style={styles.inputContainer}>

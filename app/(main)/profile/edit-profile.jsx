@@ -1,21 +1,27 @@
-import React, { useState } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    ScrollView,
-    TouchableOpacity,
-    TextInput,
-    Image,
-    Alert,
-} from 'react-native';
-import { Feather, Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import {
+    Alert,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+import { useSelector } from 'react-redux';
 import BackButton from '../../../components/back-button';
+import { getUserDetailsState } from '../../../redux/slices/userDetailsSlice';
 
 export default function EditProfile() {
     const router = useRouter();
+
+    const profile = useSelector(state => getUserDetailsState(state).profile)
+
+    console.log(profile?.phoneData)
 
     const [photos, setPhotos] = useState([
         'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200',
@@ -211,8 +217,9 @@ export default function EditProfile() {
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>Full name</Text>
                         <TextInput
-                            style={styles.input}
-                            value={fullName}
+                            editable={false}
+                            style={[styles.input, styles.disabledInput]}
+                            value={profile?.full_name}
                             onChangeText={setFullName}
                             placeholder="John Doe"
                         />
@@ -237,9 +244,9 @@ export default function EditProfile() {
                         <Text style={styles.label}>Phone number</Text>
                         <TextInput
                             style={styles.input}
-                            value={phoneNumber}
+                            value={profile?.phoneData?.phone_number}
                             onChangeText={setPhoneNumber}
-                            placeholder="00000000000"
+                            placeholder={profile?.phoneData?.phone_number}
                             keyboardType="phone-pad"
                         />
                     </View>
@@ -393,6 +400,8 @@ const styles = StyleSheet.create({
         padding: 16,
         paddingTop: 50,
         backgroundColor: '#FFF',
+        paddingHorizontal: 24, 
+        marginBottom: 15        
     },
     headerTitle: {
         fontSize: 16,
@@ -401,8 +410,8 @@ const styles = StyleSheet.create({
         paddingTop: 10,
     },
     backButtonContainer: {
-        bottom: 70,
-        left: -20,
+        // paddingHorizontal: 24, 
+        // marginBottom: 15
     },
     headerSpacer: {
         width: 24,

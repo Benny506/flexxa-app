@@ -2,7 +2,8 @@ import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 import { DateTime } from 'luxon';
 import 'react-native-url-polyfill/auto';
-import { getPublicUrl, getPublicUrls } from '../utils/apiRequests/requestApi';
+import { getPublicImageUrl } from '../utils/apiRequests/requestApi';
+import { getAgeFromDate } from '../utils/dateUtils';
 import { getNotificationToken } from '../utils/notifications/useNotificationHandler';
 import { convertToTimezone, timezones } from '../utils/utils';
 
@@ -126,8 +127,14 @@ export async function login({ email, password }) {
   const _profile = { ...profile }
 
   if (_profile?.profile_imgs) {
-    //handle getting public signed urls here
+
+    const urls = _profile?.profile_imgs?.map(imgUrl => getPublicImageUrl({ path: imgUrl, bucket_name: 'user_profiles' }))
+
+    _profile['image_urls'] = urls
+    _profile['profile_img'] = urls?.[0]
   }
+
+  _profile['age'] = profile?.dob && getAgeFromDate({ dateOfBirth: profile?.dob })
 
   const { data: userData, error: userDataError } = await fetchUserData({ id: userId })
 
@@ -139,7 +146,7 @@ export async function login({ email, password }) {
     data: {
       session: authData.session,
       user: authData.user,
-      profile: _profile,
+      profile: { ..._profile, phoneData: userData.phoneData },
       ...userData
     }
   };
@@ -187,19 +194,18 @@ export async function automaticLogin() {
     const _profile = { ...profile }
 
     if (_profile?.profile_imgs) {
-      //handle getting public signed urls here
-      const { urls } = await getPublicUrls({
-        filePaths: _profile?.profile_imgs,
-        bucket_name: 'user_profiles'
-      })
+      const urls = _profile?.profile_imgs?.map(imgUrl => getPublicImageUrl({ path: imgUrl, bucket_name: 'user_profiles' }))
 
       _profile['image_urls'] = urls
+      _profile['profile_img'] = urls?.[0]
     }
+
+    _profile['age'] = profile?.dob && getAgeFromDate({ dateOfBirth: profile?.dob })
 
     return {
       session,
       user,
-      profile: _profile,
+      profile: { ..._profile, phoneData: userData.phoneData },
       ...userData
     };
 
@@ -211,10 +217,10 @@ export async function automaticLogin() {
 
 const fetchUserData = async ({ id }) => {
 
-  const { phoneData, phoneError } = await supabase
+  const { data: phoneData, error: phoneError } = await supabase
     .from('unique_phones')
     .select("*")
-    .eq("id", id)
+    .eq("user_id", id)
     .single()
 
   const { data: flexrRequests, error: flexrRequestsError } = await supabase
@@ -228,49 +234,58 @@ const fetchUserData = async ({ id }) => {
     `)
     .eq("flex_id", id)
 
-  console.log(flexrRequests[0])
+  const { data: myEvents, error: myEventsError } = await supabase
+    .from('events')
+    .select(`
+      *
+    `)
+    .eq("flexr_id", id)
 
-  if (phoneError || flexrRequestsError) {
+  if (phoneError || flexrRequestsError || myEventsError) {
     console.log('phoneError', phoneError)
     console.log('flexrRequestsError', flexrRequestsError)
+    console.log("myEventsError", myEventsError)
     throw new Error()
   }
 
-  const enrichedFlexrRequests = await Promise.all(
-    flexrRequests.map(async (r) => {
+  const enrichedFlexrRequests = flexrRequests.map((r) => {
 
-      const { events } = r
+    const { events } = r
 
-      const { hostInfo, cover_img } = events
+    const { hostInfo, cover_imgs } = events
 
-      const { publicUrl: eventCover } = await getPublicUrl({
-        filePath: cover_img,
-        bucket_name: 'events',
-      });
+    const evtImageUrls = cover_imgs?.map(imgPath => getPublicImageUrl({ path: imgPath, bucket_name: 'events' }))
+    const hostInfoProfileUrl = getPublicImageUrl({ path: hostInfo?.profile_imgs?.[0], bucket_name: 'user_profiles' })
 
-      const { publicUrl: hostInfoProfileUrl } = await getPublicUrl({
-        filePath: hostInfo?.profile_imgs?.[0],
-        bucket_name: 'user_profiles',
-      });
+    return {
+      ...r,
+      events: {
+        ...events,
+        image_urls: evtImageUrls,
+        hostInfo: {
+          ...hostInfo,
+          image_url: hostInfoProfileUrl
+        }
+      },
+    };
+  })
 
-      return {
-        ...r,
-        events: {
-          ...events,
-          image_url: eventCover,
-          hostInfo: {
-            ...hostInfo,
-            image_url: hostInfoProfileUrl
-          }
-        },
-      };
-    })
-  );
+  const enrichedMyEvents = myEvents?.map(evt => {
+    const { cover_imgs } = evt
+
+    const image_urls = cover_imgs?.map(imgPath => getPublicImageUrl({ path: imgPath, bucket_name: 'events' }))
+
+    return {
+      ...evt,
+      image_urls
+    }
+  })
 
 
   return {
     data: {
       phoneData,
+      myEvents: enrichedMyEvents,
       flexrRequests: enrichedFlexrRequests
     },
     error: null

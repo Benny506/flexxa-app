@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { formatNumberWithCommas } from '../../utils/utils';
+import Carousel from '../Carousel';
 
 export default function EventDetailsHeader({
   event,
@@ -13,7 +14,9 @@ export default function EventDetailsHeader({
   return (
     <>
       {/* Event Image */}
-      <Image source={{ uri: event?.image_url }} style={styles.eventImage} />
+      <Carousel
+        data={event?.image_urls}
+      />
 
       {/* Title & Price */}
       <View style={styles.titleContainer}>

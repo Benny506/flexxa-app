@@ -1,9 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import colors from "../../utils/colors/colors";
 import { formatDuration, formatFullDate, getTimeRange } from "../../utils/dateUtils";
 import ZeroItems from "../ZeroItems";
+import { fontFamilies, textSizes } from "../stylesheets/globalStyleSheet";
 
-export default function EventDetailsContent({ event, status, attendees, showDetails }) {
+export default function EventDetailsContent({ event, status, attendees, showDetails, iAmHost }) {
 
   const durationString = getTimeRange({ start_time: event?.start_time, duration: event?.duration })
   const attendanceDuration = formatDuration({ seconds: event?.attendance_duration })
@@ -128,6 +130,30 @@ export default function EventDetailsContent({ event, status, attendees, showDeta
               ))}
             </View>
           </View>
+
+          {
+            iAmHost
+            &&
+            <View style={[styles.section,]}>
+              <Text style={[
+                fontFamilies.LatoBold, textSizes.txt14,
+                {
+                  color: colors._1E1E1E, fontWeight: 'bold', marginBottom: 10
+                }
+              ]}>
+                Expected Number of flexes
+              </Text>
+              
+              <Text style={[
+                fontFamilies.LatoBold, textSizes.txt13,
+                {
+                  color: colors._7E7E7E
+                }
+              ]}>
+                Total number required {event?.min_flex_count}-{event?.max_flex_count}
+              </Text>
+            </View>
+          }
 
           {/* Flexes attending */}
           <View

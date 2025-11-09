@@ -8,10 +8,14 @@ export default function ActionButtons({
   disableBtn1,
   disableBtn2,
 }) {
+
+  console.log(btn1)
+
   return (
     <View style={styles.bottomBar}>
       {
-        btn1 &&
+        btn1 
+        &&
         <TouchableOpacity
           style={[styles.clockOutButton, disableBtn1 && styles.disabled]}
           onPress={onBtn1Press}

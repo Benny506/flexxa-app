@@ -88,7 +88,7 @@ export const getEventStatuses = ({ events, currentFlexId }) => {
   const now = DateTime.utc();
 
   // Define all possible statuses
-  const eventStatuses = ["new", "ongoing", "attending", "attended", "unAttended"];
+  const eventStatuses = currentFlexId ? ["new", "ongoing", "attending", "attended", "unAttended"] : ["new", "ongoing", "past"];
 
   // Initialize counters
   const counts = Object.fromEntries(eventStatuses.map(key => [key, 0]));
@@ -119,7 +119,12 @@ export const getEventStatuses = ({ events, currentFlexId }) => {
       } else if (now >= start && now <= end) {
         status = "ongoing";
       } else if (now > end) {
-        status = "unAttended";
+        if(currentFlexId){
+          status = "unAttended";
+        
+        } else{
+          status = "past";
+        } 
       }
     }
 
@@ -136,3 +141,69 @@ export const getEventStatuses = ({ events, currentFlexId }) => {
 
   return { eventsWithStatus: enrichedEvents, counts };
 };
+
+
+
+
+
+export const getAgeFromDate = ({ dateOfBirth }) => {
+  if (!dateOfBirth) return null;
+
+  // Normalize to Luxon DateTime
+  const dob = DateTime.fromISO(
+    typeof dateOfBirth === 'string' ? dateOfBirth : dateOfBirth.toISOString()
+  );
+
+  if (!dob.isValid) return null;
+
+  const now = DateTime.now();
+  const age = now.diff(dob, 'years').years;
+
+  // Round down to full years
+  return Math.floor(age);
+};
+
+
+
+
+
+/**
+ * Checks if two dates represent the same moment in time (by default, to the millisecond).
+ */
+export const isSame = (date1, date2, unit = 'millisecond') => {
+  const d1 = DateTime.fromISO(date1);
+  const d2 = DateTime.fromISO(date2);
+  return d1.hasSame(d2, unit);
+};
+
+/**
+ * Checks if the first date is after the second one.
+ */
+export const isAfter = (date1, date2) => {
+  const d1 = DateTime.fromISO(date1);
+  const d2 = DateTime.fromISO(date2);
+  return d1 > d2;
+};
+
+/**
+ * Checks if the first date is before the second one.
+ */
+export const isBefore = (date1, date2) => {
+  const d1 = DateTime.fromISO(date1);
+  const d2 = DateTime.fromISO(date2);
+  return d1 < d2;
+};
+
+
+export function sortByStartTime(array, order = 'asc') {
+  return [...array].sort((a, b) => {
+    const dateA = DateTime.fromISO(a.start_time);
+    const dateB = DateTime.fromISO(b.start_time);
+
+    if (!dateA.isValid || !dateB.isValid) return 0;
+
+    return order === 'asc'
+      ? dateA.toMillis() - dateB.toMillis()
+      : dateB.toMillis() - dateA.toMillis();
+  });
+}

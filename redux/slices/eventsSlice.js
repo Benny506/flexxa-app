@@ -1,5 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { getEventStatuses } from "../../utils/dateUtils";
+import { getEventStatuses, sortByStartTime } from "../../utils/dateUtils";
+import { removeDuplicatesByKey } from "../../utils/utils";
 
 const eventsSlice = createSlice({
     name: 'eventsSlice',
@@ -15,9 +16,12 @@ const eventsSlice = createSlice({
             if(evts && flexId){
                 const { eventsWithStatus, counts } = getEventStatuses({ events: evts, currentFlexId: flexId })
 
+                const sorted = sortByStartTime(eventsWithStatus)
+                const filtered = removeDuplicatesByKey(sorted, 'id')
+
                 state.counts = counts
 
-                state.events = eventsWithStatus
+                state.events = filtered
             }
         }
     }

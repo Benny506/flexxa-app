@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSelector } from 'react-redux';
@@ -13,13 +12,15 @@ export default function HomeScreen() {
 
   const { fullTabNavigateTo } = useAppNavigation()
 
+  const profile = useSelector(state => getUserDetailsState(state).profile)
   const flexrRequests = useSelector(state => getUserDetailsState(state).flexrRequests)
   const myRequests = useSelector(state => getUserDetailsState(state).myRequests)
+  const myEvents = useSelector(state => getUserDetailsState(state).myEvents)
 
   const userStats = {
     eventsAttended: 10,
-    eventsCreated: 3,
-    eventsHosting: 15
+    eventsCreated: myEvents?.length,
+    eventsInvitedFor: flexrRequests?.length
   };
 
   const handleProfilePress = () => {
@@ -37,32 +38,28 @@ export default function HomeScreen() {
     });
   };
 
-  const handleMyEvents = () => {
-    router.push('/my-events')
-  };
-
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerLeft} >
           <TouchableOpacity onPress={handleProfilePress}>
             <Image
-              source={{ uri: 'https://via.placeholder.com/40' }}
+              source={{ uri: profile?.profile_img || 'https://via.placeholder.com/40' }}
               style={styles.profileImage}
             />
           </TouchableOpacity>
           <View>
-            <Text style={styles.headerName}>John Doe</Text>
-            <Text style={styles.headerHandle}>Life of the party!</Text>
+            <Text style={styles.headerName}>{profile?.full_name}</Text>
+            <Text style={styles.headerHandle}>{profile?.usertype}</Text>
           </View>
         </View>
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.notificationBadge}
           onPress={handleNotificationPress}
         >
           <Ionicons name="notifications" size={22} color="#000" />
           <View style={styles.badge} />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -78,10 +75,38 @@ export default function HomeScreen() {
           </View>
 
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{flexrRequests?.length}</Text>
-            <Text style={styles.statLabel}>Event invites</Text>
+            <Text style={styles.statNumber}>{userStats?.eventsInvitedFor}</Text>
+            <Text style={styles.statLabel}>Current Event invites</Text>
           </View>
         </View>
+
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>My Events</Text>
+        </View>
+
+        {
+          myEvents?.length > 0
+            ?
+            myEvents.map((ev) => (
+              <EventCard 
+                key={ev?.id}
+                event={ev}
+                onPress={() => handleEventPress({ event: { ...ev, hostInfo: { ...profile, image_url: profile?.profile_img }} })}
+              />
+            ))
+            :
+            <ZeroItems
+              zeroText={'You have not created any event!'}
+            />
+        }
+
+        <View
+          style={{
+            height: 1, width: '100%',
+            marginVertical: 20,
+            backgroundColor: colors._13BEBB
+          }}
+        />
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Flexr Requests</Text>
@@ -103,7 +128,7 @@ export default function HomeScreen() {
             />
         }
 
-        <View 
+        <View
           style={{
             height: 1, width: '100%',
             marginVertical: 20,
@@ -131,12 +156,12 @@ export default function HomeScreen() {
             />
         }
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.viewInvitationsBtn}
           onPress={handleMyEvents}
         >
           <Text style={styles.viewInvitationsText}>My events</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <View style={styles.bottomSpacer} />
       </ScrollView>

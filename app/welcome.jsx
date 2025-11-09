@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
-import { PrimaryButton, SecondaryButton } from '../components/onboarding/welcomeButtons';
+import { PrimaryButton } from '../components/onboarding/welcomeButtons';
 import { setOnboardingComplete } from '../utils/storage';
 
 export default function Welcome() {
@@ -47,8 +47,8 @@ export default function Welcome() {
 
         {/* Buttons at Bottom */}
         <Animated.View entering={FadeInDown.delay(400).duration(600)} style={styles.buttonContainer}>
-          <PrimaryButton title="Get Started as a Flexr" onPress={handleGetStarted} />
-          <SecondaryButton title="Get Started as a Flex" onPress={handleAlreadyUser} />
+          <PrimaryButton title="Join the fun" onPress={handleGetStarted} />
+          {/* <SecondaryButton title="Get Started as a Flex" onPress={handleAlreadyUser} /> */}
         </Animated.View>
       </View>
     </View>

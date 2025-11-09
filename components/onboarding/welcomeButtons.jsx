@@ -1,5 +1,6 @@
-import { TouchableOpacity, Text } from 'react-native';
+import { Text, TouchableOpacity } from 'react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
+import colors from '../../utils/colors/colors';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -10,7 +11,7 @@ export function PrimaryButton({ onPress, title, delay = 0 }) {
       onPress={onPress}
       activeOpacity={0.8}
       style={{
-        backgroundColor: '#CB297E', // pink-500
+        backgroundColor: colors._171B76FF, // pink-500
         paddingVertical: 16,
         paddingHorizontal: 32,
         borderRadius: 10, 

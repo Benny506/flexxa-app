@@ -102,3 +102,33 @@ export const formatNumberWithCommas = ({ value }) => {
   if (value === null || value === undefined || isNaN(Number(value))) return '0';
   return Number(value).toLocaleString();
 };
+
+
+export function hexToRgba({ hex, opacity = 1 }) {
+  let cleanHex = hex.replace('#', '');
+
+  if (cleanHex.length === 3) {
+    cleanHex = cleanHex.split('').map((c) => c + c).join('');
+  }
+
+  const r = parseInt(cleanHex.substring(0, 2), 16);
+  const g = parseInt(cleanHex.substring(2, 4), 16);
+  const b = parseInt(cleanHex.substring(4, 6), 16);
+
+  return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+}
+
+export const getTomorrowIso = () => {
+  return DateTime.now().plus({ days: 1 }).toISODate(); 
+  // e.g. "2025-11-04"
+};
+
+export function removeDuplicatesByKey(array, key) {
+  const seen = new Set();
+  return array.filter(item => {
+    const val = item[key];
+    if (seen.has(val)) return false;
+    seen.add(val);
+    return true;
+  });
+}

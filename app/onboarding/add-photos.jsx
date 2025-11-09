@@ -22,7 +22,7 @@ import { useAppNavigation } from '../../hooks/useAppNavigation';
 import { setAppAlert } from '../../redux/slices/appAlertSlice';
 import { appLoadStart, appLoadStop } from '../../redux/slices/appLoadingSlice';
 import { getUserDetailsState } from '../../redux/slices/userDetailsSlice';
-import { uploadAssets } from '../../utils/apiRequests/requestApi';
+import { getPublicImageUrl, uploadAssets } from '../../utils/apiRequests/requestApi';
 
 
 export default function AddPhotos() {
@@ -93,7 +93,7 @@ export default function AddPhotos() {
             const update = {
                 gender: params?.gender,
                 interests: params?.interests?.split(","),
-                profile_imgs: uris,
+                profile_imgs: uris?.map(uri => getPublicImageUrl({ path: uri, bucket_name: 'user_profiles' })),
                 preferences: {
                     drinking: params?.drinkingPreferences,
                     allergies: params?.hasAllergies,

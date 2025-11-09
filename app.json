@@ -39,6 +39,17 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Lato-Bold.ttf",
+            "./assets/fonts/Lato-Light.ttf",
+            "./assets/fonts/Lato-Regular.ttf",
+            "./assets/fonts/Lato-Thin.ttf"
+          ]
+        }
+      ],      
       "expo-router",
       [
         "expo-splash-screen",
@@ -67,7 +78,8 @@
           "recordAudioAndroid": true
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,

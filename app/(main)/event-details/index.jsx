@@ -1,4 +1,3 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
@@ -6,7 +5,6 @@ import {
   StatusBar,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,6 +17,7 @@ import EventDetailsHeader from '../../../components/event/EventDetailsHeader';
 // Import modals
 import { useLocalSearchParams } from 'expo-router/build/hooks';
 import { useSelector } from 'react-redux';
+import BackButton from '../../../components/back-button';
 import ActionButtons from '../../../components/event/ActionButtons';
 import Loading from '../../../components/loader';
 import AvailabilityUpdatedModal from '../../../components/modals/AvailabilityUpdatedModal';
@@ -66,8 +65,8 @@ export default function EventDetails() {
   const [clockedOutAt, setClockedOutAt] = useState(null)
   const [showDetails, setShowDetails] = useState(true);
   const [remainingTime, setRemainingTime] = useState(event?.duration);
-  const [startTime, setStartTime] = useState(null);
   const [attendees, setAttendees] = useState([])
+  const [iAmHost, setIAmHost] = useState(false)
 
   // Modal states
   const [showClockOutModal, setShowClockOutModal] = useState(false);
@@ -116,6 +115,15 @@ export default function EventDetails() {
       event_id: event?.id
     })
   }, [myRequests, flexrRequests])
+
+  useEffect(() => {
+    if (user?.id === event?.hostInfo?.id) {
+      setIAmHost(true)
+
+    } else {
+      setIAmHost(false)
+    }
+  }, [])
 
   // useEffect(() => {
   //   let interval;
@@ -255,9 +263,8 @@ export default function EventDetails() {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="chevron-back" size={24} color="#000" />
-        </TouchableOpacity>
+        <BackButton onPress={() => router.back()} />
+
         <Text style={styles.headerTitle}>Event Details</Text>
         <View style={{ width: 24 }} />
       </View>
@@ -290,7 +297,7 @@ export default function EventDetails() {
 
         {/* Expandable Details */}
         {/* Event details */}
-        <EventDetailsContent event={event} status={status} attendees={attendees} showDetails={showDetails} />
+        <EventDetailsContent iAmHost={iAmHost} event={event} status={status} attendees={attendees} showDetails={showDetails} />
 
         <View style={{ height: 100 }} />
       </ScrollView>
@@ -303,35 +310,46 @@ export default function EventDetails() {
 
       {/* Action Buttons */}
       {
-        status === null
+        iAmHost
           ?
-          <ActionButtons
-            // btn1="Decline"
-            btn2="Request to participate"
-            // Decline opens the Decline Request confirmation modal
-            // onBtn1Press={() => setShowDeclineRequestModal(true)}
-            // Accept opens the Confirm Acceptance modal
-            onBtn2Press={onRequestToParticipate}
-          />
+            <ActionButtons
+              btn1={'Edit'}
+              // btn2="Cancel event"
+              // Decline opens the Decline Request confirmation modal
+              onBtn1Press={() => {}}
+              // Accept opens the Confirm Acceptance modal
+              onBtn2Press={() => {}}
+            />
           :
-          status === 'unavailable'
+          status === null
             ?
             <ActionButtons
-              btn1="Decline"
-              btn2="Accept"
+              // btn1="Decline"
+              btn2="Request to participate"
               // Decline opens the Decline Request confirmation modal
-              onBtn1Press={() => setShowDeclineRequestModal(true)}
+              // onBtn1Press={() => setShowDeclineRequestModal(true)}
               // Accept opens the Confirm Acceptance modal
-              onBtn2Press={() => setShowConfirmAcceptanceModal(true)}
+              onBtn2Press={onRequestToParticipate}
             />
             :
-            status === 'pending'
-            &&
-            <ActionButtons
-              btn1="Awaiting approval"
-              onBtn1Press={() => {}}
-              disableBtn1={true}
-            />
+            status === 'unavailable'
+              ?
+              <ActionButtons
+                btn1="Decline"
+                btn2="Accept"
+                // Decline opens the Decline Request confirmation modal
+                onBtn1Press={() => setShowDeclineRequestModal(true)}
+                // Accept opens the Confirm Acceptance modal
+                onBtn2Press={() => setShowConfirmAcceptanceModal(true)}
+              />
+              :
+              status === 'pending'
+              &&
+              <ActionButtons
+                btn1="Awaiting approval"
+                onBtn1Press={() => { }}
+                disableBtn1={true}
+              />
         // : status === "available" && !clockedInAt ? (
         //   <ActionButtons
         //     btn1="Clock Out"
