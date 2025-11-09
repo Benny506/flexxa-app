@@ -7,6 +7,8 @@ import ZeroItems from '../../../components/ZeroItems';
 import { useAppNavigation } from '../../../hooks/useAppNavigation';
 import { getUserDetailsState } from '../../../redux/slices/userDetailsSlice';
 import colors from '../../../utils/colors/colors';
+import HomeHeader from '../../../components/home/HomeHeader';
+import StatsCard from '../../../components/home/StatsCard';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -43,45 +45,44 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft} >
-          <TouchableOpacity onPress={handleProfilePress}>
-            <Image
-              source={{ uri: 'https://via.placeholder.com/40' }}
-              style={styles.profileImage}
-            />
-          </TouchableOpacity>
-          <View>
-            <Text style={styles.headerName}>John Doe</Text>
-            <Text style={styles.headerHandle}>Life of the party!</Text>
-          </View>
-        </View>
-        <TouchableOpacity
-          style={styles.notificationBadge}
-          onPress={handleNotificationPress}
-        >
-          <Ionicons name="notifications" size={22} color="#000" />
-          <View style={styles.badge} />
-        </TouchableOpacity>
-      </View>
+      <HomeHeader
+        profileImage="https://via.placeholder.com/40"
+        name="John Doe"
+        handle="Life of the party!"
+        onProfilePress={handleProfilePress}
+        onActionPress={handleNotificationPress}
+        showBadge={true}
+        badgeCount={3}
+      />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.statsCard}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{userStats.eventsAttended}</Text>
-            <Text style={styles.statLabel}>Events Attended</Text>
-          </View>
 
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{userStats.eventsCreated}</Text>
-            <Text style={styles.statLabel}>Events Created</Text>
-          </View>
-
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>{flexrRequests?.length}</Text>
-            <Text style={styles.statLabel}>Event invites</Text>
-          </View>
-        </View>
+        <StatsCard
+          stats={[
+            { number: 10, label: 'Events Attended' },
+            { number: 3, label: 'Badges Earned' },
+            { number: 15, label: 'Event Invites' }
+          ]}
+          styles={{
+            statsCard: {
+              backgroundColor: 'rgb(19,190,187)',
+              borderRadius: 16,
+            },
+            statItem: {
+              backgroundColor: 'rgb(31,193,190)',
+              paddingVertical: 20,
+              borderRadius: 12,
+            },
+            statNumber: {
+              fontSize: 24,
+              marginBottom: 4,
+            },
+            statLabel: {
+              fontSize: 12,
+              fontWeight: '400',
+            }
+          }}
+        />
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Flexr Requests</Text>
@@ -103,7 +104,7 @@ export default function HomeScreen() {
             />
         }
 
-        <View 
+        <View
           style={{
             height: 1, width: '100%',
             marginVertical: 20,

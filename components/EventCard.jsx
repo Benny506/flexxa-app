@@ -3,7 +3,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getDayOfMonth, getShortDayOfWeek, getShortMonth, getTimeRange } from '../utils/dateUtils';
 import { formatNumberWithCommas } from '../utils/utils';
 
-export default function EventCard({ event, onPress }) {
+export default function EventCard({ event, onPress, styles: customStyles = {} }) {
 
   if(!event) return <></>
 
@@ -14,19 +14,19 @@ export default function EventCard({ event, onPress }) {
 
   return (
     <TouchableOpacity
-      style={styles.eventCard}
+      style={[styles.eventCard, customStyles.eventCard]}
       onPress={() => onPress(event?.id)}
     >
-      <View style={styles.eventDate}>
-        <Text style={styles.eventMonth}>{shortMonthText}</Text>
-        <Text style={styles.eventDay}>{dayOfTheMonth}</Text>
+      <View style={[styles.eventDate, customStyles.eventDate]}>
+        <Text style={[styles.eventMonth, customStyles.eventMonth]}>{shortMonthText}</Text>
+        <Text style={[styles.eventDay, customStyles.eventDay]}>{dayOfTheMonth}</Text>
       </View>
 
-      <View style={styles.divider} />
+      <View style={[styles.divider, customStyles.divider]} />
 
-      <View style={styles.eventDetails}>
-        <View style={styles.eventHeader}>
-          <Text style={styles.eventTitle}>{event?.title}</Text>
+      <View style={[styles.eventDetails, customStyles.eventDetails]}>
+        <View style={[styles.eventHeader, customStyles.eventHeader]}>
+          <Text style={[styles.eventTitle, customStyles.eventTitle]}>{event?.title}</Text>
           {/* <Text style={[
             styles.eventStatus,
             event.status === 'Regular ticket' ? styles.statusReply : styles.statusIssue
@@ -34,16 +34,16 @@ export default function EventCard({ event, onPress }) {
             {event.status}
           </Text> */}
         </View>
-        <Text style={styles.eventTime}>{shortWeekDayText}, {durationString}</Text>
-        <Text style={styles.eventLocation}>{event.address}, {event?.city}, {event?.state}, {event?.country}</Text>
-        <Text style={styles.eventPrice}>{formatNumberWithCommas({ value: event?.price_reward })}</Text>
+        <Text style={[styles.eventTime, customStyles.eventTime]}>{shortWeekDayText}, {durationString}</Text>
+        <Text style={[styles.eventLocation, customStyles.eventLocation]}>{event.address}, {event?.city}, {event?.state}, {event?.country}</Text>
+        <Text style={[styles.eventPrice, customStyles.eventPrice]}>{formatNumberWithCommas({ value: event?.price_reward })}</Text>
       </View>
 
       <Ionicons
         name="chevron-forward"
-        size={24}
-        color="#1E1E1E"
-        style={styles.chevronIcon}
+        size={customStyles.chevronIconSize || 24}
+        color={customStyles.chevronIconColor || "#1E1E1E"}
+        style={[styles.chevronIcon, customStyles.chevronIcon]}
       />
     </TouchableOpacity>
   );
