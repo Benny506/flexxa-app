@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
-import EventCard from '../../../components/EventCard'; // Use the existing EventCard component
+import EventCard from '../../../components/EventCard';
 import ZeroItems from '../../../components/ZeroItems';
 import useApiReqs from '../../../hooks/useApiReqs';
 import { getEventsState } from '../../../redux/slices/eventsSlice';
@@ -222,8 +222,6 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         flex: 1,
-        // Add vertical padding to match the previous list style
         paddingVertical: 12,
     },
-    // Removed all requestCard, dateBadge, and ticketBadge styles as they are now handled by EventCard.js
 });
