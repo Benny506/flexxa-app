@@ -9,24 +9,37 @@ const TimerRing = ({ time }) => (
   </View>
 );
 
-export default function ClockInSuccessModal({ visible, onClose, onFinish, currentTime }) { 
-  const modalTitle = 'Clock in Successful!';
-  const modalMessage = 'Your attendance timer has started.';
+export default function ClockInSuccessModal({ 
+  visible, 
+  onClose, 
+  onFinish, 
+  currentTime,
+  title,
+  message,
+  buttonText,
+  hideButton
+}) { 
+  // Use custom props if provided, otherwise use defaults
+  const modalTitle = title || 'Clock In Successful!';
+  const modalMessage = message || 'Your attendance timer has started.';
   const timeDisplay = currentTime; 
+  const buttonLabel = buttonText || 'View Event Details';
 
   const timerContent = (
     <View style={styles.contentContainer}>
       <TimerRing time={timeDisplay} />
     
-      <TouchableOpacity
-        style={styles.viewDetailsButton}
-        onPress={() => {
-          onClose();
-          onFinish();
-        }}
-      >
-        <Text style={styles.viewDetailsButtonText}>View Event Details</Text>
-      </TouchableOpacity>
+      {!hideButton && (
+        <TouchableOpacity
+          style={styles.viewDetailsButton}
+          onPress={() => {
+            onClose();
+            if (onFinish) onFinish();
+          }}
+        >
+          <Text style={styles.viewDetailsButtonText}>{buttonLabel}</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -40,6 +53,7 @@ export default function ClockInSuccessModal({ visible, onClose, onFinish, curren
       showCloseButton={false}
       primaryButton={false} 
       secondaryButton={false}
+      hideFooter={true}
     />
   );
 }
