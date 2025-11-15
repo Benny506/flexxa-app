@@ -3,9 +3,10 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getDayOfMonth, getShortDayOfWeek, getShortMonth, getTimeRange } from '../utils/dateUtils';
 import { formatNumberWithCommas } from '../utils/utils';
 
-export default function EventCard({ event, onPress, styles: customStyles = {} }) {
+export default function EventCard({ event, onPress, styles: customStyles = {}, showDate = true,
+  showDivider = true, }) {
 
-  if(!event) return <></>
+  if (!event) return <></>
 
   const dayOfTheMonth = getDayOfMonth({ date: event?.date })
   const shortMonthText = getShortMonth({ date: event?.date })
@@ -18,12 +19,14 @@ export default function EventCard({ event, onPress, styles: customStyles = {} })
       style={[styles.eventCard, customStyles.eventCard]}
       onPress={() => onPress(event?.id)}
     >
-      <View style={[styles.eventDate, customStyles.eventDate]}>
-        <Text style={[styles.eventMonth, customStyles.eventMonth]}>{shortMonthText}</Text>
-        <Text style={[styles.eventDay, customStyles.eventDay]}>{dayOfTheMonth}</Text>
-      </View>
+      {showDate && (
+        <View style={[styles.eventDate, customStyles.eventDate]}>
+          <Text style={[styles.eventMonth, customStyles.eventMonth]}>{shortMonthText}</Text>
+          <Text style={[styles.eventDay, customStyles.eventDay]}>{dayOfTheMonth}</Text>
+        </View>
+      )}
 
-      <View style={[styles.divider, customStyles.divider]} />
+      {showDivider && <View style={[styles.divider, customStyles.divider]} />}
 
       <View style={[styles.eventDetails, customStyles.eventDetails]}>
         <View style={[styles.eventHeader, customStyles.eventHeader]}>

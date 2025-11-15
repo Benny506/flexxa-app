@@ -1,18 +1,29 @@
 import ReusableModal from '../ReusableModal';
 
-export default function ClockOutModal({ visible, onClose, onConfirm }) {
+export default function ClockOutModal({ 
+  visible, 
+  onClose, 
+  onConfirm,
+  title,
+  message,
+  cancelText,
+  confirmText
+}) {
+  const modalTitle = title || 'Clock Out Confirmation';
+  const modalMessage = message || "Are you ready to clock out? Once you confirm, your session will be finalized.";
+
   return (
     <ReusableModal
       visible={visible}
       onClose={onClose}
-      title="Clock Out Confirmation"
-      message="Are you ready to clock out? Once you confirm, your session will be finalized."
+      title={modalTitle}
+      message={modalMessage}
       secondaryButton={{
-        text: 'Cancel',
+        text: cancelText || 'Cancel',
         onPress: onClose,
       }}
       primaryButton={{
-        text: 'Clock Out',
+        text: confirmText || 'Clock Out',
         onPress: onConfirm,
       }}
     />

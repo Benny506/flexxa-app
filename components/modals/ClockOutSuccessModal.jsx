@@ -6,27 +6,42 @@ export default function ClockOutSuccessModal({
   visible,
   onClose,
   onRateReview,
+  title,
+  message,
+  flexName,
+  secondaryButtonText,
+  primaryButtonText,
+  hideIcon
 }) {
+  const modalTitle = title || 'Clock Out Successful!';
+  
+  const modalMessage = message || (
+    flexName 
+      ? `You have successfully clocked out ${flexName}.\n\nPlease take a moment to rate ${flexName} and drop your feedback`
+      : "You have successfully clocked out.\n\n" +
+        "Thank you for attending! Please take a moment to rate the event and the organizer to help us improve future experiences."
+  );
+
+  const icon = hideIcon ? null : (
+    <View style={styles.successCheckmark}>
+      <Ionicons name="checkmark" size={40} color="#10B981" />
+    </View>
+  );
+
   return (
     <ReusableModal
       visible={visible}
       onClose={onClose}
-      icon={
-        <View style={styles.successCheckmark}>
-          <Ionicons name="checkmark" size={40} color="#10B981" />
-        </View>
-      }
-      title="Clock Out Successful!"
-      message={
-        "You have successfully clocked out.\n\n" +
-        "Thank you for attending! Please take a moment to rate the event and the organizer to help us improve future experiences."
-      }
+      // icon={icon}
+      iconBgColor={'#faeaf2'}
+      title={modalTitle}
+      message={modalMessage}
       secondaryButton={{
-        text: 'No, Later',
+        text: secondaryButtonText || 'No, Later',
         onPress: onClose,
       }}
       primaryButton={{
-        text: 'Rate & Review',
+        text: primaryButtonText || 'Rate & Review',
         onPress: onRateReview,
       }}
     />

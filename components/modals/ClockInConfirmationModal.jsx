@@ -1,17 +1,24 @@
 import ReusableModal from '../ReusableModal';
 
-export default function ClockInConfirmationModal({ visible, onClose, onConfirm }) {
-  const modalTitle = 'Clock in Confirmation';
-  const modalMessage =
-    "Are you ready to clock in? The timer will start immediately after you confirm. Ensure you're ready to begin your attendance.";
+export default function ClockInConfirmationModal({ 
+  visible, 
+  onClose, 
+  onConfirm,
+  title,
+  message,
+  cancelText,
+  confirmText
+}) {
+  const modalTitle = title || 'Clock In Confirmation';
+  const modalMessage = message || "Are you ready to clock in? The timer will start immediately after you confirm. Ensure you're ready to begin your attendance.";
 
   const secondaryButton = {
-    text: 'Cancel',
+    text: cancelText || 'Cancel',
     onPress: onClose,
   };
 
   const primaryButton = {
-    text: 'Clock In',
+    text: confirmText || 'Clock In',
     onPress: onConfirm,
   };
 
